@@ -1,0 +1,7 @@
+3.7651: Starting session
+3.913: Starting Trial 1
+24.3861: Hit left side
+28.0347: Moved grating to center
+2.8547: Starting session
+2.9073: Starting Trial 1
+11.489: Moved grating to center
