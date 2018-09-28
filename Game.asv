@@ -1,0 +1,22 @@
+classdef Game < handle
+    
+properties (Access = public)
+    gameObjects
+end
+properties (Constant)
+    deltaTime = 0.005 %minimum time between each frame
+end
+methods (Access = private)
+   
+end
+methods (Access = public)
+    function [] = StartGame()
+        allVars = whos();
+        for i = 1:numel(allVars)
+            if(allvars(i).class == 'GameObject')
+                gameObjects(end+1) = allVars()
+            end
+        end
+    end
+end
+end

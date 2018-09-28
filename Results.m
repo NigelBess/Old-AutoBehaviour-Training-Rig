@@ -1,7 +1,7 @@
 classdef Results < handle
     %RESULTS results from a series of trials
     
-    properties
+    properties% (Access = private)
         filename
         mouseID
         sessionNum
