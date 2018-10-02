@@ -10,6 +10,7 @@ port = 'COM4';
 
 
 
+
  if isTest
     experiment = DummyExperiment(mouseID, sessionNum,port);
     timeout = 2;
@@ -19,6 +20,7 @@ else
     timeout = 60;
     iti = 3;
  end
+ 
 renderer = Renderer();
 results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoopTraining');
 
@@ -29,7 +31,7 @@ results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoop
 experiment.closeServos();
 experiment.giveWater(.3);
 experiment.playReward()
-experiment.waitAndLog(2);
+%experiment.waitAndLog(2);
 experiment.logEvent('Starting session');
 for i = 1:numTrials
     while ~experiment.isBeamBroken()%wait for beam to be broken
@@ -38,7 +40,7 @@ for i = 1:numTrials
 
     experiment.openServos('Center');
 
-    gratingNum = randi([1, length(renderer.CONTRAST_OPTIONS)]);
+    
     choice = rand();%used to decied if grated circle starts on the left or right
     rightProb = results.getLeftProportionOnInterval(i-6,i-1);%returns the proportion of left choices, over the last 5 trials
    %^ to do: remove hardcode
@@ -52,11 +54,9 @@ for i = 1:numTrials
         stimPosition = 'Right';
     end
     
-   gratingSrc = [(gratingNum - 1)*1500+1, 1, gratingNum*1500, 1500];%4 value vector, not sure what this is
-   pos = renderer.InitialFrame(startingOnLeft,gratingSrc);
+   gratingNum = renderer.GenerateGrating();
+   pos = renderer.InitialFrame(startingOnLeft);
 
-   
-    renderer.NewFrame(pos,gratingSrc);
 
 
     startRespdisplayWindow = experiment.getExpTime();
@@ -64,7 +64,7 @@ for i = 1:numTrials
     %ie when we started rendering
     
     %log information about the start of the trial
-    results.StartTrial(i,stimPosition,renderer.CONTRAST_OPTIONS(gratingNum),experiment.getExpTime());
+    results.StartTrial(i,stimPosition,renderer.currentContrast,experiment.getExpTime());
     
     %initialize values
     finished = 0;%boolean    
@@ -120,7 +120,7 @@ for i = 1:numTrials
             finished = 1;%true
         end
         
-        renderer.NewFrame(pos,gratingSrc);
+        renderer.NewFrame(pos);
         experiment.logData();
     end %end while
     

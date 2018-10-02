@@ -30,3 +30,39 @@
 16.2229: Starting Trial 2
 18.7689: Moved grating to center
 20.0503: Ending Trial 2
+7.3705: Starting session
+7.1692: Starting session
+7.2801: Starting session
+7.3614: Starting Trial 1
+7.195: Starting session
+7.2738: Starting Trial 1
+9.9998: Moved grating to center
+11.3425: Ending Trial 1
+14.6347: Starting Trial 2
+20.736: Hit right side
+23.0538: Moved grating to center
+24.3778: Ending Trial 2
+27.537: Starting Trial 3
+31.2702: Moved grating to center
+32.6243: Ending Trial 3
+35.803: Starting Trial 4
+39.7827: Moved grating to center
+41.1125: Ending Trial 4
+44.2733: Starting Trial 5
+49.4003: Moved grating to center
+50.769: Ending Trial 5
+53.9942: Starting Trial 6
+55.6889: Moved grating to center
+57.0004: Ending Trial 6
+60.2107: Starting Trial 7
+62.1628: Moved grating to center
+63.5424: Ending Trial 7
+66.7428: Starting Trial 8
+68.2319: Moved grating to center
+70.2252: Ending Trial 8
+73.3433: Starting Trial 9
+74.4842: Moved grating to center
+75.8091: Ending Trial 9
+79.6679: Starting Trial 10
+82.2338: Moved grating to center
+83.5812: Ending Trial 10

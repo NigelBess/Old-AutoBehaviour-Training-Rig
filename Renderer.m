@@ -19,6 +19,8 @@ properties
         displayWindow
         screenHeight
         screenWidth
+        gratingSrc
+        currentContrast
 end
 methods
     function obj = Renderer()
@@ -39,6 +41,9 @@ methods
             [obj.xScreenCenter, obj.yScreenCenter] = RectCenter(windowRect);
             obj.displayWindow = window;
             
+            
+            
+            
         obj.ring  = GenerateTargetRing(obj.RING_OUTER,obj.RING_INNER);
         obj.tiledGratings = zeros(1500,1500*4);
         for i = 1:length(obj.CONTRAST_OPTIONS)
@@ -50,9 +55,14 @@ methods
         obj.ringTex = Screen('MakeTexture', obj.displayWindow, obj.ring);
         obj.centerPos = [obj.xScreenCenter-obj.stimSize(1)+1, obj.yScreenCenter-obj.stimSize(1)+1, obj.xScreenCenter+obj.stimSize(1), obj.yScreenCenter+obj.stimSize(2)];
     end
-    function [] = NewFrame(obj,positions, grating)
+    function gratingNum = GenerateGrating(obj)
+        gratingNum = randi([1, length(obj.CONTRAST_OPTIONS)]);
+        obj.currentContrast = obj.CONTRAST_OPTIONS(gratingNum);
+        obj.gratingSrc = [(gratingNum - 1)*1500+1, 1, gratingNum*1500, 1500];%4 value vector, not sure what this is
+    end
+    function [] = NewFrame(obj,positions)
     %render grated circle
-    Screen('DrawTexture', obj.displayWindow, obj.tex, grating, positions, 0, 0);
+    Screen('DrawTexture', obj.displayWindow, obj.tex, obj.gratingSrc, positions, 0, 0);
     
      %render the ring
     Screen('DrawTexture', obj.displayWindow, obj.ringTex, [], [obj.xScreenCenter-obj.ringSize(1) obj.yScreenCenter-obj.ringSize(1) obj.xScreenCenter+obj.ringSize(1) obj.yScreenCenter+obj.ringSize(1)],0,0);
@@ -64,9 +74,9 @@ methods
     Screen('FillRect',obj.displayWindow,obj.GREY_VALUE);
     Screen('Flip',obj.displayWindow);
     end
-    function initPos = InitialFrame(obj, startOnLeft,grating)
+    function initPos = InitialFrame(obj, startOnLeft)
          initPos = [(startOnLeft + 0.5)*obj.xScreenCenter-obj.stimSize(1)+1, obj.yScreenCenter-obj.stimSize(1)+1, (startOnLeft + 0.5)*obj.xScreenCenter+obj.stimSize(1), obj.yScreenCenter+obj.stimSize(2)];
-        obj.NewFrame(initPos,grating);
+        obj.NewFrame(initPos);
     end
     function bool = CheckLeftHit(obj, pos)
         bool = pos<0;
