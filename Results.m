@@ -22,16 +22,17 @@ classdef Results < handle
         firstLickTimes
         numTrials
         trialType
+        currentTrial
     end
     
     methods
-        function obj = Results(id, trials, sessionNum,experiment,type)
+        function obj = Results(id, trials, sessionNum,experiment,renderer,type)
             %empty buffers for data logging
             obj.dateTime = experiment.dateTime;
             obj.globalStart = experiment.globalStart;
             obj.startTimes = zeros(1,trials);
             obj.stimSequence = cell(1,trials);
-            obj.contrastOptions = experiment.CONTRAST_OPTIONS;
+            obj.contrastOptions = renderer.CONTRAST_OPTIONS;
             obj.contrastSequence = zeros(1,trials);
             obj.joystickResponses = cell(1,trials);
             for i = 1:trials
@@ -50,6 +51,35 @@ classdef Results < handle
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
             obj.saveDir = strcat('./', obj.mouseID, '_', obj.sessionID);
+        end
+        function [] = StartTrial(obj, trialNum, stimulusPosition, contrastSeq, startTime)
+            obj.currentTrial = trialNum;
+            obj.stimSequence{trialNum} = stimulusPosition;
+            obj.contrastSequence(trialNum) = contrastSeq;
+            obj.startTimes(trialNum) = startTime;
+        end
+        function [] = LogLeft(obj)
+            obj.responseCorrect(obj.currentTrial) = 0;
+            obj.joystickResponses{obj.currentTrial} = 'Left';
+            obj.responded(obj.currentTrial) = 1;%true
+        end
+        
+        function [] = LogRight(obj)
+           obj.responseCorrect(obj.currentTrial) = 0;
+            obj.joystickResponses{obj.currentTrial} = 'Right';
+            obj.responded(obj.currentTrial) = 1;%true
+        end
+        
+        function [] = LogSuccess(obj, time)
+            if ~obj.responded
+                obj.responseCorrect(obj.currentTrial) = 1;
+                obj.joystickResponses{obj.currentTrial} = obj.stimSequence{obj.currentTrial};
+                obj.responded(obj.currentTrial) = 1;%true
+            end
+            obj.joystickResponseTimes(obj.currentTrial) = time;
+        end
+        function [] = LogLick(obj, time)
+            obj.firstLickTimes(currentTrial) = time;
         end
 
         %save results in '.mat' file

@@ -4,7 +4,7 @@ clear all
 mouseID = '000';
 sessionNum = 1;
 %to do: change session num to look for existing files and increment automatically
-numTrials = 2;
+numTrials = 10;
 isTest = false;
 port = 'COM4';
 
@@ -18,19 +18,14 @@ else
     experiment = RealExperiment(mouseID, sessionNum,port);
     timeout = 60;
     iti = 3;
-end
-results = Results(mouseID, numTrials ,sessionNum,experiment,'closedLoopTraining');
+ end
+renderer = Renderer();
+results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoopTraining');
 
-tiledGratings = zeros(1500,1500*4);
-for i = 1:length(experiment.CONTRAST_OPTIONS)
-    tiledGratings(:,(i-1)*1500+1:i*1500) = GenerateCircularGrating(750,experiment.CONTRAST_OPTIONS(i));
-end
-ring = GenerateTargetRing(1000, 750);
-ringSize = [120 120];
-stimSize = [90 90];
-tex = Screen('MakeTexture', experiment.displayWindow, tiledGratings);
-ringTex = Screen('MakeTexture', experiment.displayWindow, ring);
-centerPos = [experiment.xScreenCenter-stimSize(1)+1 experiment.yScreenCenter-stimSize(1)+1 experiment.xScreenCenter+stimSize(1) experiment.yScreenCenter+stimSize(2)];
+
+
+
+
 experiment.closeServos();
 experiment.giveWater(.3);
 experiment.playReward()
@@ -43,42 +38,33 @@ for i = 1:numTrials
 
     experiment.openServos('Center');
 
-    gratingNum = randi([1, length(experiment.CONTRAST_OPTIONS)]);
-    results.contrastSequence(i) = experiment.CONTRAST_OPTIONS(gratingNum);
+    gratingNum = randi([1, length(renderer.CONTRAST_OPTIONS)]);
     choice = rand();%used to decied if grated circle starts on the left or right
-    rightProb = results.getLeftProportionOnInterval(i-6,i-1);%returns the proportion of left choices from the mouse, over the last 5 trials
-    if isnan(rightProb)
+    rightProb = results.getLeftProportionOnInterval(i-6,i-1);%returns the proportion of left choices, over the last 5 trials
+   %^ to do: remove hardcode
+   if isnan(rightProb)
         rightProb = .5;
     end 
-    if choice < rightProb
-        results.stimSequence{i} = 'Right';
+    startingOnLeft = choice > rightProb;
+    if startingOnLeft
+        stimPosition = 'Left';
     else
-        results.stimSequence{i} = 'Left';
+        stimPosition = 'Right';
     end
-
-    if strcmp(results.stimSequence{i},'Right')%to do: remove string comparison, turn both assignments into a single variable dependent assignment
-        initPos = [.5*experiment.xScreenCenter-stimSize(1)+1 experiment.yScreenCenter-stimSize(1)+1 .5*experiment.xScreenCenter+stimSize(1) experiment.yScreenCenter+stimSize(2)];
-    else
-        initPos = [1.5*experiment.xScreenCenter-stimSize(1)+1 experiment.yScreenCenter-stimSize(1)+1 1.5*experiment.xScreenCenter+stimSize(1) experiment.yScreenCenter+stimSize(2)];
-    end
-    %not sure why initPos is a vector 4
-
-    pos = initPos;%starting position of the grated circle as determined by the above choice
-    gratingSrc = [(gratingNum - 1)*1500+1, 1, gratingNum*1500, 1500];%4 value vector, not sure what this is
-    Screen('DrawTexture', experiment.displayWindow, tex, gratingSrc, pos, 0, 0);%rendering grated circle
     
-    %render the ring
-    Screen('DrawTexture', experiment.displayWindow, ringTex, [], [experiment.xScreenCenter-ringSize(1) experiment.yScreenCenter-ringSize(1) experiment.xScreenCenter+ringSize(1) experiment.yScreenCenter+ringSize(1)],0,0);
+   gratingSrc = [(gratingNum - 1)*1500+1, 1, gratingNum*1500, 1500];%4 value vector, not sure what this is
+   pos = renderer.InitialFrame(startingOnLeft,gratingSrc);
+
    
-    %not sure why we are flipping the screen
-    Screen('Flip',experiment.displayWindow);
+    renderer.NewFrame(pos,gratingSrc);
+
 
     startRespdisplayWindow = experiment.getExpTime();
-    %^ i assume this is the start time of the response window
+    %^ i assume this means the start time of the response window
     %ie when we started rendering
     
-    
-    results.startTimes(i) = experiment.getExpTime(); %log the time that this trial started
+    %log information about the start of the trial
+    results.StartTrial(i,stimPosition,renderer.CONTRAST_OPTIONS(gratingNum),experiment.getExpTime());
     
     %initialize values
     finished = 0;%boolean    
@@ -102,53 +88,39 @@ for i = 1:numTrials
             vel = 0;
         end
 
-        if pos(1) < 0 % x position to the left of the left edge of the screen
+        if renderer.CheckLeftHit(pos(1)) % x position to the left of the left edge of the screen
             %(this means the circle has collided with the left edge of th screen)
             vel = max(vel,0);%prevent the circle from moving farther
-            results.responseCorrect(i) = 0;%log trial as fail
-            if(~hasHit)
+            results.LogLeft();%log trial as hitting left wall
+            if(~hasHit)%has Hit is used to prevent repeated noise when hitting the wall during the same trial
+                %also hasHit prevents loggin trial as a success if mouse
+                %has already failed
                 disp('Hit!')
                 experiment.logEvent('Hit left side');
             end
-            results.joystickResponses{i} = 'Left';
-            results.responded(i) = 1;%true
             hasHit = 1;%true
-        elseif pos(1) > experiment.xScreenCenter*2 - stimSize(1)*2%check right size hit
+        elseif renderer.CheckRightHit(pos(1))% %check right size hit
             vel = min(vel,0);
-            results.responseCorrect(i) = 0;
             if(~hasHit)
                 disp('Hit!')
                 experiment.logEvent('Hit right side');
             end
-            results.joystickResponses{i} = 'Right';
-            results.responded(i) = 1;
+            results.LogRight();
             hasHit = 1;
         end
 
-        pos = pos + [vel 0 vel 0];%update velocity
+        pos = pos + [vel 0 vel 0];%update position
         %to do: (CRITICAL!)
         %this part absolutely needs to include some Delta Time to account
         %for speed differences in different computers
 
-        if abs(pos(1) - centerPos(1)) < stimSize*.25%success
+        if renderer.CheckSuccess(pos(1))%success
             experiment.logEvent('Moved grating to center')
-            results.responded(i) = 1;
-            results.joystickResponseTimes(i) = experiment.getExpTime();
-            if ~hasHit
-                results.responseCorrect(i) = 1;
-                if strcmp(results.stimSequence{i},'Right')
-                    results.joystickResponses{i} = 'Right';
-                else
-                    results.joystickResponses{i} = 'Left';
-                end
-            else
-                 results.responseCorrect(i) = 0;
-            end
+            results.LogSuccess(experiment.getExpTime());
             finished = 1;%true
         end
-        Screen('DrawTexture', experiment.displayWindow, tex, gratingSrc, pos, 0, 0);
-        Screen('DrawTexture', experiment.displayWindow, ringTex, [], [experiment.xScreenCenter-ringSize(1) experiment.yScreenCenter-ringSize(1) experiment.xScreenCenter+ringSize(1) experiment.yScreenCenter+ringSize(1)],0,0)
-        Screen('Flip',experiment.displayWindow);
+        
+        renderer.NewFrame(pos,gratingSrc);
         experiment.logData();
     end %end while
     
@@ -177,8 +149,7 @@ for i = 1:numTrials
         experiment.playNoise();
         experiment.waitAndLog(1);
     end
-    Screen('FillRect',experiment.displayWindow,experiment.GREY_VALUE);
-    Screen('Flip',experiment.displayWindow);
+    renderer.EmptyFrame();
     results.endTimes(i) = experiment.getExpTime();
     experiment.logEvent(['Ending Trial ' num2str(i)]);
     experiment.refillWater(.03)
@@ -189,3 +160,4 @@ for i = 1:numTrials
     disp(i)
     results.save()
 end %end for 1:numtrials
+

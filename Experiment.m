@@ -3,9 +3,8 @@ classdef Experiment < GameObject
         %constants
     properties (Constant)
         POSITION_OPTIONS = {'Left', 'Right'}
-        CONTRAST_OPTIONS = [.125 .25 .5 1]
-        DISPLAY_SCREEN_NUMBER = 2
-        GREY_VALUE = .5
+        
+       
         TONE_SAMPLE_FREQUENCY = 12000
         REWARD_TONE_DURATION = .25
         REWARD_TONE_FREQUENCY = 10000
@@ -26,11 +25,7 @@ classdef Experiment < GameObject
         globalStart
         rewardTone
         noiseTone
-        xScreenCenter
-        yScreenCenter
-        displayWindow
-        screenHeight
-        screenWidth
+
     end
     methods
         function obj =  Experiment(id,num,port)
@@ -38,22 +33,7 @@ classdef Experiment < GameObject
             obj.rewardTone = MakeTone(obj.REWARD_TONE_DURATION, obj.REWARD_TONE_FREQUENCY, obj.TONE_SAMPLE_FREQUENCY);
             obj.noiseTone = rand(1,floor(0.5*obj.TONE_SAMPLE_FREQUENCY)) - 0.5;
 
-            %Initialize PsychToolbox
-            PsychDefaultSetup(2);
-            Screen('Preference','SkipSyncTests',1);
-            Screen('Preference','VisualDebugLevel',0);
-            Screen('Preference','SuppressAllWarnings',1);
-
-            %Color Screen Grey
-            [window, windowRect] = PsychImaging('OpenWindow', obj.DISPLAY_SCREEN_NUMBER, obj.GREY_VALUE);
-
-            % Enable alpha blending with proper blend-function. We need it for drawing of our alpha-mask (gaussian aperture):
-            Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            %Get info on window
-            [obj.screenWidth, obj.screenHeight] = Screen('WindowSize', window);
-            [obj.xScreenCenter, obj.yScreenCenter] = RectCenter(windowRect);
-            obj.displayWindow = window;
+           
 
             %Mouse and Session Info
             obj.mouseID = id;
