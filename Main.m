@@ -2,7 +2,8 @@ clc
 clear all
 
 mouseID = '000';
-sessionNum = 0;
+sessionNum = 1;
+%to do: change session num to look for existing files and increment automatically
 numTrials = 2;
 isTest = false;
 port = 'COM4';
@@ -18,12 +19,7 @@ else
     timeout = 60;
     iti = 3;
 end
-results = Results(mouseID, sessionNum);
-results.globalStart = experiment.globalStart;
-results.dateTime = experiment.dateTime;
-results.numTrials = 0;
-results.trialType = 'closedLoopTraining';
-results.contrastOptions = experiment.CONTRAST_OPTIONS;
+results = Results(mouseID, numTrials ,sessionNum,experiment,'closedLoopTraining');
 
 tiledGratings = zeros(1500,1500*4);
 for i = 1:length(experiment.CONTRAST_OPTIONS)
@@ -41,16 +37,16 @@ experiment.playReward()
 experiment.waitAndLog(2);
 experiment.logEvent('Starting session');
 for i = 1:numTrials
-    while ~experiment.isBeamBroken()
-        pause(.005)
+    while ~experiment.isBeamBroken()%wait for beam to be broken
+        pause(.005)%to do, remove hardcoded time delay 
     end
 
     experiment.openServos('Center');
 
     gratingNum = randi([1, length(experiment.CONTRAST_OPTIONS)]);
     results.contrastSequence(i) = experiment.CONTRAST_OPTIONS(gratingNum);
-    choice = rand();
-    rightProb = results.getLeftProportionOnInterval(i-6,i-1);
+    choice = rand();%used to decied if grated circle starts on the left or right
+    rightProb = results.getLeftProportionOnInterval(i-6,i-1);%returns the proportion of left choices from the mouse, over the last 5 trials
     if isnan(rightProb)
         rightProb = .5;
     end 
@@ -60,49 +56,64 @@ for i = 1:numTrials
         results.stimSequence{i} = 'Left';
     end
 
-    if strcmp(results.stimSequence{i},'Right')
+    if strcmp(results.stimSequence{i},'Right')%to do: remove string comparison, turn both assignments into a single variable dependent assignment
         initPos = [.5*experiment.xScreenCenter-stimSize(1)+1 experiment.yScreenCenter-stimSize(1)+1 .5*experiment.xScreenCenter+stimSize(1) experiment.yScreenCenter+stimSize(2)];
     else
         initPos = [1.5*experiment.xScreenCenter-stimSize(1)+1 experiment.yScreenCenter-stimSize(1)+1 1.5*experiment.xScreenCenter+stimSize(1) experiment.yScreenCenter+stimSize(2)];
     end
+    %not sure why initPos is a vector 4
 
-    pos = initPos;
-    gratingSrc = [(gratingNum - 1)*1500+1 1 gratingNum*1500 1500];
-    Screen('DrawTexture', experiment.displayWindow, tex, gratingSrc, pos, 0, 0);
-    Screen('DrawTexture', experiment.displayWindow, ringTex, [], [experiment.xScreenCenter-ringSize(1) experiment.yScreenCenter-ringSize(1) experiment.xScreenCenter+ringSize(1) experiment.yScreenCenter+ringSize(1)],0,0)
+    pos = initPos;%starting position of the grated circle as determined by the above choice
+    gratingSrc = [(gratingNum - 1)*1500+1, 1, gratingNum*1500, 1500];%4 value vector, not sure what this is
+    Screen('DrawTexture', experiment.displayWindow, tex, gratingSrc, pos, 0, 0);%rendering grated circle
+    
+    %render the ring
+    Screen('DrawTexture', experiment.displayWindow, ringTex, [], [experiment.xScreenCenter-ringSize(1) experiment.yScreenCenter-ringSize(1) experiment.xScreenCenter+ringSize(1) experiment.yScreenCenter+ringSize(1)],0,0);
+   
+    %not sure why we are flipping the screen
     Screen('Flip',experiment.displayWindow);
 
     startRespdisplayWindow = experiment.getExpTime();
-    results.startTimes(i) = experiment.getExpTime();
-    finished = 0;
-    results.responded(i) = 0;
-    results.responseCorrect(i) = 0;
-    results.joystickResponseTimes(i) = -1;
-    hasHit = 0;
-    results.joystickResponses{i} = 'None';
+    %^ i assume this is the start time of the response window
+    %ie when we started rendering
+    
+    
+    results.startTimes(i) = experiment.getExpTime(); %log the time that this trial started
+    
+    %initialize values
+    finished = 0;%boolean    
+    hasHit = 0;%boolean
     experiment.logEvent(['Starting Trial ' num2str(i)]);
+    
+    
     while ~finished && experiment.getExpTime() - startRespdisplayWindow < timeout
+        %float reading = reading of mouse input
         if isTest
-            reading = (mod(gratingNum,3)-1)*100;
+            reading = (mod(gratingNum,3)-1)*100;%dummy value
         else
-            reading = experiment.readEnc();
+            reading = experiment.readEnc();%input from wheel
         end
-        vel = (reading-25*sign(reading))*(10/105);
-        if abs(reading) < 50
+        vel = (reading-25*sign(reading))*(10/105);%turn reading from wheel into a screen velocity (in pixels/frame maybe?)
+        %to do: get rid of hardcoded values
+        %to do: convert velocity to units of pixels/time instead of
+        %pixels/frame
+        
+        if abs(reading) < 50%minimum wheel turn required. to do: remove hardcoded value
             vel = 0;
         end
 
-        if pos(1) < 0
-            vel = max(vel,0);
-            results.responseCorrect(i) = 0;
+        if pos(1) < 0 % x position to the left of the left edge of the screen
+            %(this means the circle has collided with the left edge of th screen)
+            vel = max(vel,0);%prevent the circle from moving farther
+            results.responseCorrect(i) = 0;%log trial as fail
             if(~hasHit)
                 disp('Hit!')
                 experiment.logEvent('Hit left side');
             end
             results.joystickResponses{i} = 'Left';
-            results.responded(i) = 1;
-            hasHit = 1;
-        elseif pos(1) > experiment.xScreenCenter*2 - stimSize(1)*2
+            results.responded(i) = 1;%true
+            hasHit = 1;%true
+        elseif pos(1) > experiment.xScreenCenter*2 - stimSize(1)*2%check right size hit
             vel = min(vel,0);
             results.responseCorrect(i) = 0;
             if(~hasHit)
@@ -114,9 +125,12 @@ for i = 1:numTrials
             hasHit = 1;
         end
 
-        pos = pos + [vel 0 vel 0];
+        pos = pos + [vel 0 vel 0];%update velocity
+        %to do: (CRITICAL!)
+        %this part absolutely needs to include some Delta Time to account
+        %for speed differences in different computers
 
-        if abs(pos(1) - centerPos(1)) < stimSize*.25
+        if abs(pos(1) - centerPos(1)) < stimSize*.25%success
             experiment.logEvent('Moved grating to center')
             results.responded(i) = 1;
             results.joystickResponseTimes(i) = experiment.getExpTime();
@@ -130,29 +144,35 @@ for i = 1:numTrials
             else
                  results.responseCorrect(i) = 0;
             end
-            finished = 1;
+            finished = 1;%true
         end
         Screen('DrawTexture', experiment.displayWindow, tex, gratingSrc, pos, 0, 0);
         Screen('DrawTexture', experiment.displayWindow, ringTex, [], [experiment.xScreenCenter-ringSize(1) experiment.yScreenCenter-ringSize(1) experiment.xScreenCenter+ringSize(1) experiment.yScreenCenter+ringSize(1)],0,0)
         Screen('Flip',experiment.displayWindow);
         experiment.logData();
     end %end while
+    
+    %at this point the mouse has completed or timed out the current trial
 
     experiment.closeServos()
-    experiment.waitAndLog(1);
+    experiment.waitAndLog(1);%see what the wheel is doing while the servos close.
+    %^ to do: remove hardcoded value
 
-    if finished
+    if finished % the mouse successfully completed the trial (didnt time out)
         experiment.playReward();
-        startLickdisplayWindow = experiment.getExpTime();
-        while experiment.getExpTime() - startLickdisplayWindow < .5
+        startLickdisplayWindow = experiment.getExpTime();%log the time that the reward stimulus started
+        while experiment.getExpTime() - startLickdisplayWindow < .5% mouse has a 0.5 second window to lick the lickmeter
+            %^ to do: remove hardcode
             experiment.logData();
-            if(experiment.readLickometer() == 0)
-                results.firstLickTimes(results.sessionNum) = experiment.getExpTime();
+            if(experiment.readLickometer() == 0)%returns zero while mouse is licking
+                results.firstLickTimes(results.sessionNum) = experiment.getExpTime();%we want to log the time of lick to see if the mouse was anticipating the water
+                %if the mouse doesn't lick within this while loop,
+                %fistlicktimes retains its default value of -1 (used as a null)
                 break;
             end
-            pause(.005);
+            pause(.005);%to do: remove hardcode
         end
-        experiment.giveWater(.15);
+        experiment.giveWater(.15);%to do: remove hardcode
     else
         experiment.playNoise();
         experiment.waitAndLog(1);

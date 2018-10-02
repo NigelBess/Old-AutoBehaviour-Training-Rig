@@ -25,24 +25,27 @@ classdef Results < handle
     end
     
     methods
-        function obj = Results(id, num)
+        function obj = Results(id, trials, sessionNum,experiment,type)
             %empty buffers for data logging
-            obj.dateTime = -1;
-            obj.globalStart = -1;
-            obj.startTimes = [];
-            obj.stimSequence = {};
-            obj.contrastOptions = [];
-            obj.contrastSequence = [];
-            obj.joystickResponses = {};
-            obj.joystickResponseTimes = [];
+            obj.dateTime = experiment.dateTime;
+            obj.globalStart = experiment.globalStart;
+            obj.startTimes = zeros(1,trials);
+            obj.stimSequence = cell(1,trials);
+            obj.contrastOptions = experiment.CONTRAST_OPTIONS;
+            obj.contrastSequence = zeros(1,trials);
+            obj.joystickResponses = cell(1,trials);
+            for i = 1:trials
+                obj.joystickResponses{i} = 'None';
+            end
+            obj.joystickResponseTimes = -1*ones(1,trials);%-1 is used as a null value
             obj.joystickCounts = [];
-            obj.responseCorrect = [];
-            obj.responded = [];
+            obj.responseCorrect = zeros(1,trials);
+            obj.responded = zeros(1,trials);
             obj.firstLickTimes = [];
-            obj.numTrials = 1;
-            obj.trialType ="";
+            obj.numTrials = trials;
+            obj.trialType = type;
             obj.mouseID = id;
-            obj.sessionNum = num;
+            obj.sessionNum = sessionNum;
             
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];

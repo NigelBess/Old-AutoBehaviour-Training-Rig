@@ -20,6 +20,11 @@ methods (Access = public)
             end
         end
         numObjects = numel(this.gameObjects);
+        if (numObjects <=0)
+            fprintf("No GameObjects found in workspace. Game cancelled.\n");
+            return;
+        end
+        fprintf("found " + num2str(numObjects) + "GameObjects");
         
         %initialize all gameObjects
         for i = 1:numObjects

@@ -1,0 +1,7 @@
+6.6826: Starting session
+6.7523: Starting Trial 1
+12.7848: Moved grating to center
+14.1081: Ending Trial 1
+17.2361: Starting Trial 2
+23.8817: Moved grating to center
+25.2751: Ending Trial 2
