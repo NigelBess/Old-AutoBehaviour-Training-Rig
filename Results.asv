@@ -71,7 +71,7 @@ classdef Results < handle
         end
         
         function [] = LogSuccess(obj, time)
-            if ~obj.responded(obj.currentTrial)
+            if ~obj.responded
                 obj.responseCorrect(obj.currentTrial) = 1;
                 obj.joystickResponses{obj.currentTrial} = obj.stimSequence{obj.currentTrial};
                 obj.responded(obj.currentTrial) = 1;%true
@@ -92,52 +92,52 @@ classdef Results < handle
         
         %overall correct rate (including no-response trials)
         function ocr = getOverallCorrectRate(obj)
-            ocr = mean(obj.responseCorrect(1:obj.currentTrial-1));
+            ocr = mean(obj.responseCorrect(1:obj.currentTrial));
         end
         
         %overall response rate
         function orr = getOverallResponseRate(obj)
-            orr = mean(obj.responded(1:obj.currentTrial-1));
+            orr = mean(obj.responded(1:obj.currentTrial));
         end
         
         %correct rate for trials with 'Left' stimulus
         function lcr = getLeftCorrectRate(obj)
-            lcr = mean(obj.responseCorrect(cellfun(@(x)strcmp(x,'Left'),obj.stimSequence(1:obj.currentTrial-1))));
+            lcr = mean(obj.responseCorrect(cellfun(@(x)strcmp(x,'Left'),obj.stimSequence(1:obj.currentTrial))));
         end
         
         %correct rate for trials with 'Right' stimulus
         function rcr = getRightCorrectRate(obj)
-            rcr = mean(obj.responseCorrect(cellfun(@(x)strcmp(x,'Right'),obj.stimSequence(1:obj.currentTrial-1))));
+            rcr = mean(obj.responseCorrect(cellfun(@(x)strcmp(x,'Right'),obj.stimSequence(1:obj.currentTrial))));
         end
         
         %response rate for trials with 'Left' stimulus
         function lrr = getLeftResponseRate(obj)
-            lrr = mean(obj.responded(cellfun(@(x)strcmp(x,'Left'),obj.stimSequence(1:obj.currentTrial-1))));
+            lrr = mean(obj.responded(cellfun(@(x)strcmp(x,'Left'),obj.stimSequence(1:obj.currentTrial))));
         end
         
         %response rate for trials with 'Right' stimulus
         function rrr = getRightResponseRate(obj)
-            rrr = mean(obj.responded(cellfun(@(x)strcmp(x,'Right'),obj.stimSequence(1:obj.currentTrial-1))));
+            rrr = mean(obj.responded(cellfun(@(x)strcmp(x,'Right'),obj.stimSequence(1:obj.currentTrial))));
         end
         
         %fraction of time mouse response to the left (doesn't include no-response trials)
         function lrp = getLeftResponseProportion(obj)
-            lrp = mean(cellfun(@(x)strcmp(x,'Left'),obj.joystickResponses(logical(obj.responded(1:obj.currentTrial-1)))));
+            lrp = mean(cellfun(@(x)strcmp(x,'Left'),obj.joystickResponses(logical(obj.responded))));
         end
         
         %fraction of time mouse response to the right (doesn't include no-response trails)
         function rrp = getRightResponseProportion(obj)
-            rrp = mean(cellfun(@(x)strcmp(x,'Right'),obj.joystickResponses(logical(obj.responded(1:obj.currentTrial-1)))));
+            rrp = mean(cellfun(@(x)strcmp(x,'Right'),obj.joystickResponses(logical(obj.responded))));
         end
         
         %correct rate for a specific contrast level
         function contcr = getCorrectRateForContrast(obj, cont)
-            contcr = mean(obj.responseCorrect(obj.contrastSequence(1:obj.currentTrial-1) == cont));
+            contcr = mean(obj.responseCorrect(obj.contrastSequence == cont));
         end
         
         %response rate for a specific contrast level
         function contrr = getResponseRateForContrast(obj, cont)
-            contrr = mean(obj.responded(obj.contrastSequence(1:obj.currentTrial-1) == cont));
+            contrr = mean(obj.responded(obj.contrastSequence == cont));
         end
         
         %print out all of the information

@@ -33,7 +33,10 @@ experiment.giveWater(.3);
 experiment.playReward()
 %experiment.waitAndLog(2);
 experiment.logEvent('Starting session');
+
+
 for i = 1:numTrials
+
     while ~experiment.isBeamBroken()%wait for beam to be broken
         pause(.005)%to do, remove hardcoded time delay 
     end
@@ -127,7 +130,7 @@ for i = 1:numTrials
     %at this point the mouse has completed or timed out the current trial
 
     experiment.closeServos()
-    experiment.waitAndLog(1);%see what the wheel is doing while the servos close.
+    experiment.waitAndLog(1);%see what the mouse is doing while the servos close.
     %^ to do: remove hardcoded value
 
     if finished % the mouse successfully completed the trial (didnt time out)
@@ -160,4 +163,6 @@ for i = 1:numTrials
     disp(i)
     results.save()
 end %end for 1:numtrials
+
+
 
