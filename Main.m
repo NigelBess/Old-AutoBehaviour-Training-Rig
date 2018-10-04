@@ -41,7 +41,7 @@ for i = 1:numTrials
         pause(.005)%to do, remove hardcoded time delay 
     end
 
-    experiment.openServos('Center');
+    experiment.openServos();
 
     
     choice = rand();%used to decied if grated circle starts on the left or right

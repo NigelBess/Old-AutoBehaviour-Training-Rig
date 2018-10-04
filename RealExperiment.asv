@@ -36,34 +36,34 @@ classdef RealExperiment < Experiment
             obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
             obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
+            
+
+            
+            obj.resetEnc();
             writeDigitalPin(obj.arduinoBoard,obj.LICKOMETER_POWER_PIN,1);%for lickometer
             obj.openServos();
-            obj.openRightServo();
-            obj.openLeftServo();
-            obj.closeServos();
             obj.lastWaterTime = -1;
         end
        
         %Open 1 or more servos
         function [] = openServos(obj)
-            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);               
+                obj.leftServo.writePosition(obj.LEFT_SERVO_OPEN_POS);
+                obj.rightServo.writePosition(obj.RIGHT_SERVO_OPEN_POS);
+                pause(
         end
-        function [] = openLeftServo(obj)
-            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);       
+        function [] = leftServos(obj)
+            obj.leftServo.writePosition(obj.LEFT_SERVO_OPEN_POS);
+            obj.rightServo.writePosition(obj.RIGHT_SERVO_CLOSED_POS);
         end
-        function [] = openRightServo(obj)
-            obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);       
-        end
-        function [] = positionServos(obj,left,right)
-                obj.leftServo.writePosition(left);
-                obj.rightServo.writePosition(right);
-                 pause(obj.SERVO_ADJUSTMENT_TIME);
+        function [] = rightServos(obj)
+            obj.leftServo.writePosition(obj.LEFT_SERVO_CLOSED_POS);
+            obj.rightServo.writePosition(obj.RIGHT_SERVO_OPEN_POS);
         end
         
         %close both servos
         function [] = closeServos(obj)
-                obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_CLOSED_POS);
-                obj.resetEnc();
+                obj.leftServo.writePosition(obj.LEFT_SERVO_CLOSED_POS);
+                obj.rightServo.writePosition(obj.RIGHT_SERVO_CLOSED_POS);
         end
         
         %1 = no lick, 0 = licking

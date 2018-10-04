@@ -50,7 +50,7 @@ classdef Results < handle
             
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
-            obj.saveDir = strcat('./', obj.mouseID, '_', obj.sessionID);
+            obj.saveDir = experiment.saveDir;
         end
         function [] = StartTrial(obj, trialNum, stimulusPosition, contrastSeq, startTime)
             obj.currentTrial = trialNum;
