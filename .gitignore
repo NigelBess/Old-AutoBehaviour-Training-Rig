@@ -2,3 +2,6 @@ Data/
 
 # CSV files
 *.csv
+
+# Matlab workspace files
+*.mat
