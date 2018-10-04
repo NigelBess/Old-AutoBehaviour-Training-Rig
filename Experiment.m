@@ -41,7 +41,7 @@ classdef Experiment < GameObject
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
             
             %create save directory
-            obj.saveDir = strcat('./', obj.mouseID, '_', obj.sessionID);
+            obj.saveDir = strcat('./Data/', obj.mouseID, '_', obj.sessionID);
             mkdir(obj.saveDir);
             
             %csv log file

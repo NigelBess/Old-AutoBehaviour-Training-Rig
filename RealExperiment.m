@@ -11,7 +11,7 @@ classdef RealExperiment < Experiment
     
     %constants
     properties (Constant)
-        LEFT_SERVO_PIN = 'D5'
+        LEFT_SERVO_PIN = 'D9'
         RIGHT_SERVO_PIN = 'D6'
         ENCODER_PIN_A = 'D2'
         ENCODER_PIN_B = 'D3'
