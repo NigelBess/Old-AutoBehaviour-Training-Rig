@@ -54,7 +54,7 @@ methods
         obj.stimSize = [90 90];
         obj.tex = Screen('MakeTexture', obj.displayWindow, obj.tiledGratings);
         obj.ringTex = Screen('MakeTexture', obj.displayWindow, obj.ring);
-        obj.centerPos = obj.Center();
+        obj.centerPos = [obj.xScreenCenter-obj.stimSize(1)+1, obj.yScreenCenter-obj.stimSize(1)+1, obj.xScreenCenter+obj.stimSize(1), obj.yScreenCenter+obj.stimSize(2)];
     end
     function gratingNum = GenerateGrating(obj)
         gratingNum = randi([1, length(obj.CONTRAST_OPTIONS)]);
@@ -95,7 +95,6 @@ methods
         rightSide = obj.xScreenCenter*2;
     end
     function out = Center(obj)
-        out = [obj.xScreenCenter-obj.stimSize(1)+1, obj.yScreenCenter-obj.stimSize(1)+1, obj.xScreenCenter+obj.stimSize(1), obj.yScreenCenter+obj.stimSize(2)];
     end
     function leftSide = LeftSide(obj)
         leftSide = 0;

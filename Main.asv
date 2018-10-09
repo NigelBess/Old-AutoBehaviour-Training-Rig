@@ -102,8 +102,8 @@ for i = 1:numTrials
 %             vel = 0;
 %         end
 
-        if renderer.CheckLeftHit(pos) % x position to the left of the left edge of the screen
-            pos = renderer.ToLeft();
+        if renderer.CheckLeftHit(pos(1)) % x position to the left of the left edge of the screen
+            pos = movePos(pos,renderer.LeftSide()-pos(1));
             %(this means the circle has collided with the left edge of th screen)
             vel = max(vel,0);%prevent the circle from moving farther
             results.LogLeft();%log trial as hitting left wall
@@ -114,8 +114,8 @@ for i = 1:numTrials
                 experiment.logEvent('Hit left side');
             end
             hasHit = 1;%true
-        elseif renderer.CheckRightHit(pos)% %check right size hit
-            pos = renderer.ToRight();
+        elseif renderer.CheckRightHit(pos(1))% %check right size hit
+            pos = renderer.To;
             vel = min(vel,0);
             if(~hasHit)
                 disp('Hit!')
@@ -123,24 +123,20 @@ for i = 1:numTrials
             end
             results.LogRight();
             hasHit = 1;
-            
         end
-        if renderer.CheckSuccess(pos)%success
-            pos = renderer.centerPos;
+        
+        pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
+        %to do: (CRITICAL!)
+        %this part absolutely needs to include some Delta Time to account
+        %for speed differences in different computers
+
+        if renderer.CheckSuccess(pos(1))%success
             experiment.logEvent('Moved grating to center')
             results.LogSuccess(experiment.getExpTime());
             finished = 1;%true
         end
         
         renderer.NewFrame(pos);
-        
-         pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
-       
-
-
-        
-        
-        
         experiment.logData();
         lastFrameTime = GetSecs();
     end %end while

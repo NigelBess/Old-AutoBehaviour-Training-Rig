@@ -7,6 +7,7 @@ classdef RealExperiment < Experiment
         leftServo
         rightServo
         encoder
+        outsideOfRange;
     end
     
     %constants
@@ -23,9 +24,9 @@ classdef RealExperiment < Experiment
         RIGHT_SERVO_OPEN_POS = 1
         LEFT_SERVO_CLOSED_POS = 0.5
         RIGHT_SERVO_CLOSED_POS = 0.5
-        LEFT_JOYSTICK_RESPONSE_THRESHOLD = -45
-        RIGHT_JOYSTICK_RESPONSE_THRESHOLD = 45
-        SERVO_ADJUSTMENT_TIME = 0.5;
+        JOYSTICK_RESPONSE_THRESHOLD = 5
+        MAX_JOYSTICK_VALUE = 100
+        SERVO_ADJUSTMENT_TIME = 0.5
     end
     
     methods
@@ -36,34 +37,35 @@ classdef RealExperiment < Experiment
             obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
             obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
-            
-
-            
-            obj.resetEnc();
             writeDigitalPin(obj.arduinoBoard,obj.LICKOMETER_POWER_PIN,1);%for lickometer
             obj.openServos();
+            obj.openRightServo();
+            obj.openLeftServo();
+            obj.closeServos();
             obj.lastWaterTime = -1;
         end
        
         %Open 1 or more servos
         function [] = openServos(obj)
-                obj.leftServo.writePosition(obj.LEFT_SERVO_OPEN_POS);
-                obj.rightServo.writePosition(obj.RIGHT_SERVO_OPEN_POS);
-                pause(
+            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);               
         end
-        function [] = leftServos(obj)
-            obj.leftServo.writePosition(obj.LEFT_SERVO_OPEN_POS);
-            obj.rightServo.writePosition(obj.RIGHT_SERVO_CLOSED_POS);
+        function [] = openLeftServo(obj)
+            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);       
         end
-        function [] = rightServos(obj)
-            obj.leftServo.writePosition(obj.LEFT_SERVO_CLOSED_POS);
-            obj.rightServo.writePosition(obj.RIGHT_SERVO_OPEN_POS);
+        function [] = openRightServo(obj)
+            obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);       
+        end
+        function [] = positionServos(obj,left,right)
+                obj.leftServo.writePosition(left);
+                obj.rightServo.writePosition(right);
+                 pause(obj.SERVO_ADJUSTMENT_TIME);
         end
         
         %close both servos
         function [] = closeServos(obj)
-                obj.leftServo.writePosition(obj.LEFT_SERVO_CLOSED_POS);
-                obj.rightServo.writePosition(obj.RIGHT_SERVO_CLOSED_POS);
+                obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_CLOSED_POS);
+                obj.resetEnc(0);
+                obj.outsideOfRange = false;
         end
         
         %1 = no lick, 0 = licking
@@ -72,23 +74,37 @@ classdef RealExperiment < Experiment
         end
         
         %set encoder position to 0
-        function [] = resetEnc(obj)
-               readCount(obj.encoder,'reset',true);
+        function [] = resetEnc(obj,value)
+               resetCount(obj.encoder,value);
         end
         
         %read encoder counts
         function n = readEnc(obj)
             n = readCount(obj.encoder);
+            if abs(n)>obj.MAX_JOYSTICK_VALUE
+                n = obj.MAX_JOYSTICK_VALUE;
+                if ~obj.outsideOfRange
+                    obj.outsideOfRange = true;
+                    obj.resetEnc(obj.MAX_JOYSTICK_VALUE*sign(n));
+                end
+            else
+                obj.outsideofRange = false;
+            end
+            if abs(n)<obj.JOYSTICK_RESPONSE_THRESHOLD
+                n = 0;
+                return;
+            end
+            
         end
         
         %determine if joystick is farther left than threshold
         function l = isJoyLeft(obj)
-            l = obj.readEnc() < obj.LEFT_JOYSTICK_RESPONSE_THRESHOLD;
+            l = obj.readEnc() < -obj.JOYSTICK_RESPONSE_THRESHOLD;
         end
         
         %determine if joystick is farther right than threshold
         function r = isJoyRight(obj)
-            r = obj.readEnc() > obj.RIGHT_JOYSTICK_RESPONSE_THRESHOLD;
+            r = obj.readEnc() > obj.JOYSTICK_RESPONSE_THRESHOLD;
         end
         
         function [] = giveWater(obj, time)

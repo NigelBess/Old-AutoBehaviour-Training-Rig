@@ -81,6 +81,9 @@ classdef Results < handle
         function [] = LogLick(obj, time)
             obj.firstLickTimes(obj.currentTrial) = time;
         end
+        function [] = EndTrial(obj,time)
+            obj.endTimes(obj.currentTrial) = time;
+        end
 
         %save results in '.mat' file
         function [] = save(obj)
