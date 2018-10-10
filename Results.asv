@@ -177,7 +177,7 @@ classdef Results < handle
             fprintf("Mouse chooses left %d %% of the time. \n",floor(obj.getResponseProportion(-1)*100));
             obj.horizontalLine();
             fprintf("On average, the mouse chooses the same direction %.2f times in a row\n",obj.avgStreak());
-            fprintf("Chance value for average streak : 2.00\n\n\n");
+            fprintf();
         end
         function [] = horizontalLine(obj)
             fprintf("---------------------------------\n\n");

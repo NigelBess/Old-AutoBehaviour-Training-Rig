@@ -1,28 +1,23 @@
 clc
 clear all
 lastFrameTime = 0;
-velocitySensitivity = 500;
-maxVelocity = 10000;
+maxVelocity = 500;
+timeout = 20;
+
 
 mouseID = '000';
 sessionNum = 1;
 %to do: change session num to look for existing files and increment automatically
-numTrials = 10;
+numTrials = 100;
 isTest = false;
 port = 'COM4';
 
 
 
 
- if isTest
-    experiment = DummyExperiment(mouseID, sessionNum,port);
-    timeout = 2;
-    iti = .5;
-else
+
     experiment = RealExperiment(mouseID, sessionNum,port);
-    timeout = 60;
-    iti = 3;
- end
+    
  
 renderer = Renderer();
 results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoopTraining');
@@ -32,12 +27,14 @@ results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoop
 
 
 experiment.closeServos();
-experiment.giveWater(.3);
 experiment.playReward()
 %experiment.waitAndLog(2);
 experiment.logEvent('Starting session');
+velocitySensitivity = maxVelocity/experiment.MAX_JOYSTICK_VALUE;
 
 lastFrameTime = GetSecs();
+buttonPressed = false;
+clc;
 for i = 1:numTrials
 
     while ~experiment.isBeamBroken()%wait for beam to be broken
@@ -55,9 +52,9 @@ for i = 1:numTrials
     end 
     startingOnLeft = choice > rightProb;
     if startingOnLeft
-        stimPosition = 'Left';
+        stimPosition = -1;
     else
-        stimPosition = 'Right';
+        stimPosition = 1;
     end
     
    gratingNum = renderer.GenerateGrating();
@@ -81,15 +78,17 @@ for i = 1:numTrials
    % buttonHandle = uicontrol
     
     while ~finished && experiment.getExpTime() - startRespdisplayWindow < timeout
+        if (experiment.isButtonPressed)
+          %  buttonPressed = true;
+           % break;
+        end
         %float reading = reading of mouse input
         if isTest
             reading = (mod(gratingNum,3)-1)*100;%dummy value
         else
             reading = experiment.readEnc();%input from wheel
         end
-        clc;
-        fprintf(num2str(reading)+"\n");
-        vel = -(reading)*velocitySensitivity;
+        vel = (reading)*velocitySensitivity;
         if abs(vel)>maxVelocity
             vel = maxVelocity*sign(vel);
         end
@@ -103,14 +102,15 @@ for i = 1:numTrials
 %         end
 
         if renderer.CheckLeftHit(pos) % x position to the left of the left edge of the screen
+            
             pos = renderer.ToLeft();
             %(this means the circle has collided with the left edge of th screen)
             vel = max(vel,0);%prevent the circle from moving farther
             results.LogLeft();%log trial as hitting left wall
             if(~hasHit)%has Hit is used to prevent repeated noise when hitting the wall during the same trial
-                %also hasHit prevents loggin trial as a success if mouse
+                %also hasHit prevents logging trial as a success if mouse
                 %has already failed
-                disp('Hit!')
+                experiment.playNoise();
                 experiment.logEvent('Hit left side');
             end
             hasHit = 1;%true
@@ -118,7 +118,7 @@ for i = 1:numTrials
             pos = renderer.ToRight();
             vel = min(vel,0);
             if(~hasHit)
-                disp('Hit!')
+                experiment.playNoise();
                 experiment.logEvent('Hit right side');
             end
             results.LogRight();
@@ -126,6 +126,7 @@ for i = 1:numTrials
             
         end
         if renderer.CheckSuccess(pos)%success
+            experiment.playReward();
             pos = renderer.centerPos;
             experiment.logEvent('Moved grating to center')
             results.LogSuccess(experiment.getExpTime());
@@ -144,15 +145,19 @@ for i = 1:numTrials
         experiment.logData();
         lastFrameTime = GetSecs();
     end %end while
+    experiment.closeServos();
+    clc;
+    results.shortStats();
+    if (buttonPressed)
+        break;
+    end
     
     %at this point the mouse has completed or timed out the current trial
 
     experiment.closeServos()
-    experiment.waitAndLog(1);%see what the mouse is doing while the servos close.
-    %^ to do: remove hardcoded value
 
     if finished % the mouse successfully completed the trial (didnt time out)
-        experiment.playReward();
+        
         startLickdisplayWindow = experiment.getExpTime();%log the time that the reward stimulus started
         while experiment.getExpTime() - startLickdisplayWindow < .5% mouse has a 0.5 second window to lick the lickmeter
             %^ to do: remove hardcode
@@ -168,19 +173,19 @@ for i = 1:numTrials
         experiment.giveWater(.15);%to do: remove hardcode
     else
         experiment.playNoise();
-        experiment.waitAndLog(1);
     end
     renderer.EmptyFrame();
     results.EndTrial(experiment.getExpTime());
     experiment.logEvent(['Ending Trial ' num2str(i)]);
     experiment.refillWater(.03)
-    disp(i)
     results.save()
 end %end for 1:numtrials
+sca;
 function out = movePos(original, offset)
     out = original;
     out = out + [offset, 0, offset, 0];
 end
+
 
 
 

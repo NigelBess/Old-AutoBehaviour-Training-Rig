@@ -17,15 +17,17 @@ classdef RealExperiment < Experiment
         ENCODER_PIN_A = 'D2'
         ENCODER_PIN_B = 'D3'
         SOLENOID_PIN = 'A0'
-        LICKOMETER_READ_PIN  = 'A4'
-        LICKOMETER_POWER_PIN = 'A3'
+        LICKMETER_READ_PIN  = 'A2'
+        LICKMETER_POWER_PIN = 'A3'
         BEAM_BREAK_PIN = 'D11'
-        LEFT_SERVO_OPEN_POS = 0.25
-        RIGHT_SERVO_OPEN_POS = 0.75
-        LEFT_SERVO_CLOSED_POS = 0.5
-        RIGHT_SERVO_CLOSED_POS = 0.5
-        JOYSTICK_RESPONSE_THRESHOLD = 0.5
-        MAX_JOYSTICK_VALUE = 5
+        BUTTON_PIN = 'A4';
+        BUTTON_POWER_PIN = 'A5';
+        LEFT_SERVO_OPEN_POS = 1
+        RIGHT_SERVO_OPEN_POS = 0
+        LEFT_SERVO_CLOSED_POS = 0.6
+        RIGHT_SERVO_CLOSED_POS = 0.4
+        JOYSTICK_RESPONSE_THRESHOLD = 40
+        MAX_JOYSTICK_VALUE = 80
         SERVO_ADJUSTMENT_TIME = 0.5
     end
     
@@ -37,10 +39,8 @@ classdef RealExperiment < Experiment
             obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
             obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
-            writeDigitalPin(obj.arduinoBoard,obj.LICKOMETER_POWER_PIN,1);%for lickometer
-            obj.openServos();
-            obj.openRightServo();
-            obj.openLeftServo();
+           % writeDigitalPin(obj.arduinoBoard,obj.LICKMETER_POWER_PIN,1);%for lickometer
+            writeDigitalPin(obj.arduinoBoard,obj.BUTTON_POWER_PIN,1);%for button
             obj.closeServos();
             obj.lastWaterTime = -1;
         end
@@ -70,7 +70,7 @@ classdef RealExperiment < Experiment
         
         %1 = no lick, 0 = licking
         function reading = readLickometer(obj)
-               reading = readDigitalPin(obj.arduinoBoard,obj.LICKOMETER_READ_PIN);
+               reading = readDigitalPin(obj.arduinoBoard,obj.LICKMETER_READ_PIN);
         end
         
         %set encoder position to 0
@@ -83,12 +83,8 @@ classdef RealExperiment < Experiment
             n = readCount(obj.encoder);
             if abs(n)>obj.MAX_JOYSTICK_VALUE
                 n = obj.MAX_JOYSTICK_VALUE*sign(n);
-                if ~obj.outsideOfRange
-                    obj.outsideOfRange = true;
                     obj.resetEnc(obj.MAX_JOYSTICK_VALUE*sign(n));
-                end
-            else
-                obj.outsideOfRange = false;
+                return;
             end
             if abs(n)<obj.JOYSTICK_RESPONSE_THRESHOLD
                 n = 0;
@@ -170,6 +166,9 @@ classdef RealExperiment < Experiment
         %determine wheather IR beam is broken by mouse
         function broken = isBeamBroken(obj)
             broken = ~readDigitalPin(obj.arduinoBoard,obj.BEAM_BREAK_PIN);
+        end
+        function out = isButtonPressed(obj)
+            out = readDigitalPin(obj.arduinoBoard,obj.BUTTON_PIN);
         end
     end
     
