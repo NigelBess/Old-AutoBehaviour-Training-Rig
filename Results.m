@@ -59,6 +59,9 @@ classdef Results < handle
             obj.contrastSequence(trialNum) = contrastSeq;
             obj.startTimes(trialNum) = startTime;
         end
+        function [] = cancelTrial(obj)
+            obj.currentTrial = obj.currentTrial-1;
+        end
         function [] = LogLeft(obj)
             obj.responseCorrect(obj.currentTrial) = 0;
             obj.joystickResponses(obj.currentTrial) = -1;
@@ -134,14 +137,8 @@ classdef Results < handle
         
         %fraction of time mouse response to the left (doesn't include no-response trials)
         function out = getResponseProportion(obj,direction)
-            out = obj.meanOfMatching(obj.responded,1,obj.joystickResponses);
-            out = obj.meanOfDirectionsToRate(out,direction);
-        end
-        function out = meanOfDirectionsToRate(obj,avg,direction)
-            out = (avg + 1)/2;
-            if direction == -1
-                out = 1- out;
-            end
+            responses = obj.joystickResponses(obj.responded==1);
+            out = sum(responses==direction)/numel(responses);
         end
         
         %correct rate for a specific contrast level
@@ -193,7 +190,7 @@ classdef Results < handle
                 return;
             end
             interval = obj.joystickResponses(start:last);
-            out = obj.meanOfDirectionsToRate(mean(interval),-1);
+            out = sum(interval==-1)/numel(interval);
         end
         
         function out = avgStreak(obj)

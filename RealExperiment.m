@@ -16,7 +16,7 @@ classdef RealExperiment < Experiment
         RIGHT_SERVO_PIN = 'D6'
         ENCODER_PIN_A = 'D2'
         ENCODER_PIN_B = 'D3'
-        SOLENOID_PIN = 'A0'
+        SOLENOID_PIN = 'D12'
         LICKMETER_READ_PIN  = 'A2'
         LICKMETER_POWER_PIN = 'A3'
         BEAM_BREAK_PIN = 'D11'
@@ -29,18 +29,21 @@ classdef RealExperiment < Experiment
         JOYSTICK_RESPONSE_THRESHOLD = 40
         MAX_JOYSTICK_VALUE = 80
         SERVO_ADJUSTMENT_TIME = 0.5
+        SERVO_TRANSISTOR_PIN = 'A1'
     end
     
     methods
         function obj = RealExperiment(id, num, port)
             obj = obj@Experiment(id,num,port);
             %hardware
+            
             obj.arduinoBoard = arduino(port,'uno','libraries',{'servo','rotaryEncoder'});
             obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
             obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
-           % writeDigitalPin(obj.arduinoBoard,obj.LICKMETER_POWER_PIN,1);%for lickometer
+            writeDigitalPin(obj.arduinoBoard,obj.LICKMETER_POWER_PIN,1);%for lickometer
             writeDigitalPin(obj.arduinoBoard,obj.BUTTON_POWER_PIN,1);%for button
+            
             obj.closeServos();
             obj.lastWaterTime = -1;
         end
@@ -56,9 +59,12 @@ classdef RealExperiment < Experiment
             obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);       
         end
         function [] = positionServos(obj,left,right)
+            writeDigitalPin(obj.arduinoBoard,obj.SERVO_TRANSISTOR_PIN,1);
                 obj.leftServo.writePosition(left);
+               
                 obj.rightServo.writePosition(right);
                  pause(obj.SERVO_ADJUSTMENT_TIME);
+                 writeDigitalPin(obj.arduinoBoard,obj.SERVO_TRANSISTOR_PIN,0);
         end
         
         %close both servos
@@ -69,8 +75,8 @@ classdef RealExperiment < Experiment
         end
         
         %1 = no lick, 0 = licking
-        function reading = readLickometer(obj)
-               reading = readDigitalPin(obj.arduinoBoard,obj.LICKMETER_READ_PIN);
+        function out = isLicking(obj)
+               out = ~readDigitalPin(obj.arduinoBoard,obj.LICKMETER_READ_PIN);
         end
         
         %set encoder position to 0
@@ -131,7 +137,7 @@ classdef RealExperiment < Experiment
         %write measured values to csv
         function [] = logData(obj)
             count = obj.readEnc();
-            lick = obj.readLickometer();
+            lick = obj.isLicking();
             timestamp = obj.getExpTime();
             data = [count lick timestamp];
             dlmwrite(obj.csvFilename,data,'delimiter',',','precision',9,'-append');
@@ -168,7 +174,7 @@ classdef RealExperiment < Experiment
             broken = ~readDigitalPin(obj.arduinoBoard,obj.BEAM_BREAK_PIN);
         end
         function out = isButtonPressed(obj)
-            out = readDigitalPin(obj.arduinoBoard,obj.BUTTON_PIN);
+            out = ~readDigitalPin(obj.arduinoBoard,obj.BUTTON_PIN);
         end
     end
     

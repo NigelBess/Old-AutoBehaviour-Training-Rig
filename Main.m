@@ -18,6 +18,7 @@ port = 'COM4';
 
     experiment = RealExperiment(mouseID, sessionNum,port);
     
+    
  
 renderer = Renderer();
 results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoopTraining');
@@ -75,12 +76,11 @@ for i = 1:numTrials
     experiment.logEvent(['Starting Trial ' num2str(i)]);
    
     
-   % buttonHandle = uicontrol
     
     while ~finished && experiment.getExpTime() - startRespdisplayWindow < timeout
         if (experiment.isButtonPressed)
-          %  buttonPressed = true;
-           % break;
+           buttonPressed = true;
+           break;
         end
         %float reading = reading of mouse input
         if isTest
@@ -92,33 +92,26 @@ for i = 1:numTrials
         if abs(vel)>maxVelocity
             vel = maxVelocity*sign(vel);
         end
-        %vel = (reading-25*sign(reading))*(10/105);%turn reading from wheel into a screen velocity (in pixels/frame maybe?)
-        %to do: get rid of hardcoded values
-        %to do: convert velocity to units of pixels/time instead of
-        %pixels/frame
         
-%         if abs(reading) < 50%minimum wheel turn required. to do: remove hardcoded value
-%             vel = 0;
-%         end
 
         if renderer.CheckLeftHit(pos) % x position to the left of the left edge of the screen
-            
+            %experiment.playNoise();
             pos = renderer.ToLeft();
-            %(this means the circle has collided with the left edge of th screen)
             vel = max(vel,0);%prevent the circle from moving farther
             results.LogLeft();%log trial as hitting left wall
             if(~hasHit)%has Hit is used to prevent repeated noise when hitting the wall during the same trial
                 %also hasHit prevents logging trial as a success if mouse
                 %has already failed
-                experiment.playNoise();
+               % experiment.playNoise();
                 experiment.logEvent('Hit left side');
             end
             hasHit = 1;%true
         elseif renderer.CheckRightHit(pos)% %check right size hit
+            %experiment.playNoise();
             pos = renderer.ToRight();
             vel = min(vel,0);
             if(~hasHit)
-                experiment.playNoise();
+                %experiment.playNoise();
                 experiment.logEvent('Hit right side');
             end
             results.LogRight();
@@ -147,11 +140,13 @@ for i = 1:numTrials
     end %end while
     experiment.closeServos();
     clc;
-    results.shortStats();
+    
     if (buttonPressed)
+        results.cancelTrial();
+        results.shortStats();
         break;
     end
-    
+    results.shortStats();
     %at this point the mouse has completed or timed out the current trial
 
     experiment.closeServos()
@@ -162,7 +157,7 @@ for i = 1:numTrials
         while experiment.getExpTime() - startLickdisplayWindow < .5% mouse has a 0.5 second window to lick the lickmeter
             %^ to do: remove hardcode
             experiment.logData();
-            if(experiment.readLickometer() == 0)%returns zero while mouse is licking
+            if(experiment.isLicking())
                 results.firstLickTimes(results.sessionNum) = experiment.getExpTime();%we want to log the time of lick to see if the mouse was anticipating the water
                 %if the mouse doesn't lick within this while loop,
                 %fistlicktimes retains its default value of -1 (used as a null)
@@ -173,7 +168,7 @@ for i = 1:numTrials
         experiment.giveWater(.15);%to do: remove hardcode
     else
         experiment.playNoise();
-    end
+    end 
     renderer.EmptyFrame();
     results.EndTrial(experiment.getExpTime());
     experiment.logEvent(['Ending Trial ' num2str(i)]);
