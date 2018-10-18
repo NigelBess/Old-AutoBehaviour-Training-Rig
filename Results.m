@@ -71,7 +71,7 @@ classdef Results < handle
             obj.stimSequence(trialNum) = stimulusPosition;
             obj.contrastSequence(trialNum) = contrastSeq;
             obj.startTimes(trialNum) = startTime;
-            obj.frames = zeros(3,obj.FRAMES_PER_TRIAL);
+            obj.frames = zeros(obj.FRAMES_PER_TRIAL,3);
             obj.currentFrame = 0;
         end
         function [] = cancelTrial(obj)
@@ -84,9 +84,9 @@ classdef Results < handle
         end
         function [] = LogFrame(obj,encoder,lickMeter,time)
             obj.currentFrame = obj.currentFrame+1;
-            obj.frames(1,obj.currentFrame) = encoder;
-            obj.frames(2,obj.currentFrame) = lickMeter;
-            obj.frames(3,obj.currentFrame) = time;
+            obj.frames(obj.currentFrame,1) = encoder;
+            obj.frames(obj.currentFrame,2) = lickMeter;
+            obj.frames(obj.currentFrame,3) = time;
         end
         function [] = LogRight(obj)
            obj.responseCorrect(obj.currentTrial) = 0;
@@ -116,7 +116,7 @@ classdef Results < handle
             end
             save([obj.saveDir '/' obj.mouseID '_' obj.sessionID '_results.mat'],'obj');
             for i = 1:obj.currentFrame
-                 dlmwrite(obj.csvFilename,obj.frames(:,i),'delimiter',',','precision',9,'-append');
+                 dlmwrite(obj.csvFilename,obj.frames(i,:),'delimiter',',','precision',9,'-append');
             end
         end
         

@@ -6,7 +6,7 @@ timeout = 20;
 
 
 mouseID = '000';
-sessionNum = 1;
+sessionNum = 3;
 %to do: change session num to look for existing files and increment automatically
 numTrials = 100;
 isTest = false;
