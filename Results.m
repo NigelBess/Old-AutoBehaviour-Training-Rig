@@ -48,13 +48,14 @@ classdef Results < handle
             obj.trialType = type;
             obj.mouseID = id;
             obj.sessionNum = sessionNum;
-            
+            obj.currentTrial = 0;
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
             obj.saveDir = experiment.saveDir;
         end
-        function [] = StartTrial(obj, trialNum, stimulusPosition, contrastSeq, startTime)
-            obj.currentTrial = trialNum;
+        function [] = StartTrial(obj, stimulusPosition, contrastSeq, startTime)
+            obj.currentTrial = obj.currentTrial + 1;
+            trialNum = obj.currentTrial;
             obj.stimSequence(trialNum) = stimulusPosition;
             obj.contrastSequence(trialNum) = contrastSeq;
             obj.startTimes(trialNum) = startTime;
@@ -174,7 +175,6 @@ classdef Results < handle
             fprintf("Mouse chooses left %d %% of the time. \n",floor(obj.getResponseProportion(-1)*100));
             obj.horizontalLine();
             fprintf("On average, the mouse chooses the same direction %.2f times in a row\n",obj.avgStreak());
-            fprintf("Chance value for average streak : 2.00\n\n\n");
         end
         function [] = horizontalLine(obj)
             fprintf("---------------------------------\n\n");

@@ -66,7 +66,6 @@ for i = 1:numTrials
     
    gratingNum = renderer.GenerateGrating();
    pos = renderer.InitialFrame(startingOnLeft);
-   disp(pos)
 
 
 
@@ -75,7 +74,7 @@ for i = 1:numTrials
     %ie when we started rendering
     
     %log information about the start of the trial
-    results.StartTrial(stimPosition,renderer.currentContrast,experiment.getExpTime());
+    results.StartTrial(i,stimPosition,renderer.currentContrast,experiment.getExpTime());
     
     %initialize values
     finished = 0;%boolean    
@@ -99,7 +98,7 @@ for i = 1:numTrials
         if abs(vel)>maxVelocity
             vel = maxVelocity*sign(vel);
         end
-         pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
+        
 
         if renderer.CheckLeftHit(pos) % x position to the left of the left edge of the screen
             %experiment.playNoise();
@@ -135,7 +134,7 @@ for i = 1:numTrials
         
         renderer.NewFrame(pos);
         
-        
+         pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
        
 
 
@@ -153,7 +152,7 @@ for i = 1:numTrials
         results.shortStats();
         break;
     end
-    
+    results.shortStats();
     %at this point the mouse has completed or timed out the current trial
 
     experiment.closeServos()
@@ -179,11 +178,10 @@ for i = 1:numTrials
             experiment.playNoise();
             results.EndTrial(experiment.getExpTime());
         else
-            results.cancelTrial();
+            results.cance
         end
         
     end 
-    results.shortStats();
     renderer.EmptyFrame();
     
     experiment.logEvent(['Ending Trial ' num2str(i)]);
