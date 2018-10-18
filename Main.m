@@ -16,7 +16,7 @@ port = 'COM4';
 
 
 
-    experiment = RealExperiment(mouseID, sessionNum,port);
+    experiment = RealExperiment(port);
     
     
  
@@ -30,7 +30,7 @@ results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoop
 experiment.closeServos();
 experiment.playReward()
 %experiment.waitAndLog(2);
-experiment.logEvent('Starting session');
+%experiment.logEvent('Starting session');
 velocitySensitivity = maxVelocity/experiment.MAX_JOYSTICK_VALUE;
 
 lastFrameTime = GetSecs();
@@ -80,11 +80,12 @@ for i = 1:numTrials
     %initialize values
     finished = 0;%boolean    
     hasHit = 0;%boolean
-    experiment.logEvent(['Starting Trial ' num2str(i)]);
+   % experiment.logEvent(['Starting Trial ' num2str(i)]);
    
     
     
     while ~finished && experiment.getExpTime() - startRespdisplayWindow < timeout
+        results.LogFrame(experiment.readEnc(),experiment.isLicking(),experiment.getExpTime());
         if (experiment.isButtonPressed)
            buttonPressed = true;
            break;
@@ -110,7 +111,7 @@ for i = 1:numTrials
                 %also hasHit prevents logging trial as a success if mouse
                 %has already failed
                % experiment.playNoise();
-                experiment.logEvent('Hit left side');
+               % experiment.logEvent('Hit left side');
             end
             hasHit = 1;%true
         elseif renderer.CheckRightHit(pos)% %check right size hit
@@ -119,7 +120,7 @@ for i = 1:numTrials
             vel = min(vel,0);
             if(~hasHit)
                 %experiment.playNoise();
-                experiment.logEvent('Hit right side');
+                %experiment.logEvent('Hit right side');
             end
             results.LogRight();
             hasHit = 1;
@@ -128,7 +129,7 @@ for i = 1:numTrials
         if renderer.CheckSuccess(pos)%success
             experiment.playReward();
             pos = renderer.centerPos;
-            experiment.logEvent('Moved grating to center')
+            %experiment.logEvent('Moved grating to center')
             results.LogSuccess(experiment.getExpTime());
             finished = 1;%true
         end
@@ -142,7 +143,7 @@ for i = 1:numTrials
         
         
         
-        experiment.logData();
+       % experiment.logData();
         lastFrameTime = GetSecs();
     end %end while
     experiment.closeServos();
@@ -163,7 +164,8 @@ for i = 1:numTrials
         startLickdisplayWindow = experiment.getExpTime();%log the time that the reward stimulus started
         while experiment.getExpTime() - startLickdisplayWindow < .5% mouse has a 0.5 second window to lick the lickmeter
             %^ to do: remove hardcode
-            experiment.logData();
+           % experiment.logData();
+           results.LogFrame(experiment.readEnc(),experiment.isLicking(),experiment.getExpTime());
             if(experiment.isLicking())
                 results.firstLickTimes(results.sessionNum) = experiment.getExpTime();%we want to log the time of lick to see if the mouse was anticipating the water
                 %if the mouse doesn't lick within this while loop,
@@ -186,7 +188,7 @@ for i = 1:numTrials
     results.shortStats();
     renderer.EmptyFrame();
     
-    experiment.logEvent(['Ending Trial ' num2str(i)]);
+    %experiment.logEvent(['Ending Trial ' num2str(i)]);
     experiment.refillWater(.03)
     results.save()
 end %end for 1:numtrials

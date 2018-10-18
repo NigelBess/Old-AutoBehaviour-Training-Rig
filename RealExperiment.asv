@@ -154,7 +154,7 @@ classdef RealExperiment < Experiment
             startWait = GetSecs;
             while GetSecs - startWait < time
                 WaitSecs(.05);
-                %obj.logData();
+                obj.logData();
             end
         end
         

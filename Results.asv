@@ -5,7 +5,7 @@ classdef Results < handle
     %     0 : no choice
     %     1 : right
     properties (Constant)
-        FRAMES_PER_TRIAL = 1800;
+        
     end
     properties (Access = private)
         filename
@@ -30,8 +30,6 @@ classdef Results < handle
         numTrials
         trialType
         currentTrial
-        currentFrame
-        frames
     end
     
     methods
@@ -71,8 +69,6 @@ classdef Results < handle
             obj.stimSequence(trialNum) = stimulusPosition;
             obj.contrastSequence(trialNum) = contrastSeq;
             obj.startTimes(trialNum) = startTime;
-            obj.frames = zeros(3,obj.FRAMES_PER_TRIAL);
-            obj.currentFrame = 0;
         end
         function [] = cancelTrial(obj)
             obj.currentTrial = obj.currentTrial-1;
@@ -82,12 +78,7 @@ classdef Results < handle
             obj.joystickResponses(obj.currentTrial) = -1;
             obj.responded(obj.currentTrial) = 1;%true
         end
-        function [] = LogFrame(obj,encoder,lickMeter,time)
-            obj.currentFrame = obj.currentFrame+1;
-            obj.frames(1,obj.currentFrame) = encoder;
-            obj.frames(2,obj.currentFrame) = lickMeter;
-            obj.frames(3,obj.currentFrame) = time;
-        end
+        
         function [] = LogRight(obj)
            obj.responseCorrect(obj.currentTrial) = 0;
             obj.joystickResponses(obj.currentTrial) = 1;
@@ -115,9 +106,6 @@ classdef Results < handle
                 mkdir(obj.saveDir);
             end
             save([obj.saveDir '/' obj.mouseID '_' obj.sessionID '_results.mat'],'obj');
-            for i = 1:obj.currentFrame
-                 dlmwrite(obj.csvFilename,obj.frames(:,i),'delimiter',',','precision',9,'-append');
-            end
         end
         
         %overall correct rate (including no-response trials)
