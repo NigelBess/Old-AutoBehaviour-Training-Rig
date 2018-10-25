@@ -56,7 +56,7 @@ classdef Results < handle
             obj.currentTrial = 0;
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
-            obj.saveDir = strcat('./Data/', obj.mouseID, '_', obj.sessionID);
+            obj.saveDir = strcat('Z:/Autobehavior Data/', obj.mouseID, '_', obj.sessionID);
             mkdir(obj.saveDir);
             obj.csvFilename = strcat(obj.saveDir, '/', obj.mouseID, '_', obj.sessionID, '.csv');
             csvHeaders = {'Encoder Reading', 'Lickometer', 'Timestamp'};

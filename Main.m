@@ -1,7 +1,7 @@
 clc
 clear all
 lastFrameTime = 0;
-maxVelocity = 500;
+maxVelocity = 250;
 timeout = 20;
 
 
@@ -9,8 +9,7 @@ mouseID = '000';
 sessionNum = 3;
 %to do: change session num to look for existing files and increment automatically
 numTrials = 100;
-isTest = false;
-port = 'COM4';
+port = 'COM3';
 
 
 
@@ -66,7 +65,7 @@ for i = 1:numTrials
     
    gratingNum = renderer.GenerateGrating();
    pos = renderer.InitialFrame(startingOnLeft);
-   disp(pos)
+  
 
 
 
@@ -82,44 +81,38 @@ for i = 1:numTrials
     hasHit = 0;%boolean
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
    
-    
-    
-    while ~finished && experiment.getExpTime() - startRespdisplayWindow < timeout
-        results.LogFrame(experiment.readEnc(),experiment.isLicking(),experiment.getExpTime());
+    vel = 0;
+    time = experiment.getExpTime();
+    while ~finished && time - startRespdisplayWindow < timeout
+        time = experiment.getExpTime();
         if (experiment.isButtonPressed)
            buttonPressed = true;
            break;
         end
-        %float reading = reading of mouse input
-        if isTest
-            reading = (mod(gratingNum,3)-1)*100;%dummy value
-        else
-            reading = experiment.readEnc();%input from wheel
-        end
+        reading = experiment.readEnc();%input from wheel
+        results.LogFrame(reading,-1,time);
         vel = (reading)*velocitySensitivity;
         if abs(vel)>maxVelocity
             vel = maxVelocity*sign(vel);
         end
-         pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
-
+         
+        pos = movePos(pos,vel*(GetSecs()-lastFrameTime));%update position
         if renderer.CheckLeftHit(pos) % x position to the left of the left edge of the screen
-            %experiment.playNoise();
             pos = renderer.ToLeft();
-            vel = max(vel,0);%prevent the circle from moving farther
+            vel = 0;%prevent the circle from moving farther
             results.LogLeft();%log trial as hitting left wall
             if(~hasHit)%has Hit is used to prevent repeated noise when hitting the wall during the same trial
                 %also hasHit prevents logging trial as a success if mouse
                 %has already failed
-               % experiment.playNoise();
+               experiment.playNoise();
                % experiment.logEvent('Hit left side');
             end
             hasHit = 1;%true
         elseif renderer.CheckRightHit(pos)% %check right size hit
-            %experiment.playNoise();
             pos = renderer.ToRight();
-            vel = min(vel,0);
+            vel = 0;
             if(~hasHit)
-                %experiment.playNoise();
+                experiment.playNoise();
                 %experiment.logEvent('Hit right side');
             end
             results.LogRight();
@@ -129,12 +122,14 @@ for i = 1:numTrials
         if renderer.CheckSuccess(pos)%success
             experiment.playReward();
             pos = renderer.centerPos;
+            vel = 0;
             %experiment.logEvent('Moved grating to center')
             results.LogSuccess(experiment.getExpTime());
             finished = 1;%true
         end
         
         renderer.NewFrame(pos);
+        
         
         
        

@@ -24,8 +24,8 @@ classdef RealExperiment < Experiment
         BUTTON_POWER_PIN = 'A5';
         LEFT_SERVO_OPEN_POS = 1
         RIGHT_SERVO_OPEN_POS = 0
-        LEFT_SERVO_CLOSED_POS = 0.6
-        RIGHT_SERVO_CLOSED_POS = 0.4
+        LEFT_SERVO_CLOSED_POS = 0.64
+        RIGHT_SERVO_CLOSED_POS = 0.36
         JOYSTICK_RESPONSE_THRESHOLD = 40
         MAX_JOYSTICK_VALUE = 80
         SERVO_ADJUSTMENT_TIME = 0.5
@@ -37,12 +37,12 @@ classdef RealExperiment < Experiment
             %hardware
             
             obj.arduinoBoard = arduino(port,'uno','libraries',{'servo','rotaryEncoder'});
-            obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
-            obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
+            
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
             writeDigitalPin(obj.arduinoBoard,obj.LICKMETER_POWER_PIN,1);%for lickometer
             writeDigitalPin(obj.arduinoBoard,obj.BUTTON_POWER_PIN,1);%for button
-            
+            obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
+            obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.closeServos();
             obj.lastWaterTime = -1;
         end
