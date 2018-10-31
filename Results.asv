@@ -35,13 +35,14 @@ classdef Results < handle
     end
     
     methods
-        function obj = Results(id, trials, sessionNum,experiment,type)
+        function obj = Results(id, trials, sessionNum,experiment,renderer,type)
             %empty buffers for data logging
             obj.dateTime = experiment.dateTime;
             obj.globalStart = experiment.globalStart;
             obj.startTimes = zeros(1,trials);
             obj.stimSequence = zeros(1,trials);
-            
+            if renderer~=[]
+                obj.contrastOptions = renderer.CONTRAST_OPTIONS;
             obj.contrastSequence = zeros(1,trials);
             obj.joystickResponses = zeros(1,trials);
             obj.joystickResponseTimes = -1*ones(1,trials);%-1 is used as a null value
@@ -73,9 +74,6 @@ classdef Results < handle
             obj.startTimes(trialNum) = startTime;
             obj.frames = zeros(obj.FRAMES_PER_TRIAL,3);
             obj.currentFrame = 0;
-        end
-        function [] = setContrastOptions(obj,renderer)
-            obj.contrastOptions = renderer.CONTRAST_OPTIONS;
         end
         function [] = cancelTrial(obj)
             obj.currentTrial = obj.currentTrial-1;
@@ -203,9 +201,6 @@ classdef Results < handle
         end
         function [] = horizontalLine(obj)
             fprintf("---------------------------------\n\n");
-        end
-        function out = getCurrentTrial(obj)
-            out = obj.currentTrial;
         end
         
         %get fraction of left responses of a specific interval of trials. Used for bias correction

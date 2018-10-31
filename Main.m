@@ -6,7 +6,7 @@ timeout = 20;
 
 
 mouseID = '000';
-sessionNum = 3;
+sessionNum = 1;
 %to do: change session num to look for existing files and increment automatically
 numTrials = 100;
 port = 'COM3';
@@ -20,7 +20,8 @@ port = 'COM3';
     
  
 renderer = Renderer();
-results = Results(mouseID, numTrials ,sessionNum,experiment,renderer,'closedLoopTraining');
+results = Results(mouseID, numTrials ,sessionNum,experiment,'closedLoopTraining');
+results.setContrastOptions(renderer);
 
 
 
