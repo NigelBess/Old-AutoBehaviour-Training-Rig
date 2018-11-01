@@ -1,6 +1,8 @@
 clc
 clear all
 
+%*IMPORTANT*
+%make sure to set these values before running
 mouseID = '000';
 sessionNum = 1;
 numTrials = 1000;
@@ -13,7 +15,8 @@ r = Results(mouseID, numTrials,sessionNum,e,'lickOnly');
 %    mouseID ' ' num2str(sessionNum) '&']);
 e.openServos();
 lastReading = 1;
-r.StartTrial(0,0,GetSecs);
+startTime = GetSecs;
+r.StartTrial(0,0,startTime);
 while r.getCurrentTrial()<numTrials
     currReading = e.isLicking();
     clc
@@ -21,8 +24,9 @@ while r.getCurrentTrial()<numTrials
     if(currReading == 0 && lastReading == 1)
             e.playReward();
             e.giveWater(0.015);
-            r.LogLick(GetSecs);
-            r.StartTrial(0,0,GetSecs);
+            r.LogLick(GetSecs-startTime);
+            startTime = GetSecs();
+            r.StartTrial(0,0,startTime);
     end
     lastReading = currReading;
     e.refillWater(.015)

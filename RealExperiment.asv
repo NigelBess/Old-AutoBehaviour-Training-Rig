@@ -52,12 +52,9 @@ classdef RealExperiment < Experiment
             obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);               
         end
         function [] = openSide(obj,side)
-            if side>0
-                obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);
-            else
-                obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);
+            if side<0
+                
             end
-            obj.resetEnc(0);
         end
         function [] = openLeftServo(obj)
             obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);       

@@ -4,11 +4,15 @@ lastFrameTime = 0;
 maxVelocity = 250;
 timeout = 20;
 
-
+%*IMPORTANT*
+%make sure to set these values before running
 mouseID = '000';
-sessionNum = 1;
-%to do: change session num to look for existing files and increment automatically
+sessionNum = 5;
 numTrials = 100;
+
+
+
+
 port = 'COM3';
 
 
@@ -132,13 +136,6 @@ for i = 1:numTrials
         renderer.NewFrame(pos);
         
         
-        
-       
-
-
-        
-        
-        
        % experiment.logData();
         lastFrameTime = GetSecs();
     end %end while
@@ -163,7 +160,7 @@ for i = 1:numTrials
            % experiment.logData();
            results.LogFrame(experiment.readEnc(),experiment.isLicking(),experiment.getExpTime());
             if(experiment.isLicking())
-                results.firstLickTimes(results.sessionNum) = experiment.getExpTime();%we want to log the time of lick to see if the mouse was anticipating the water
+                results.LogLick(GetSecs()-startLickdisplayWindow);%we want to log the time of lick to see if the mouse was anticipating the water
                 %if the mouse doesn't lick within this while loop,
                 %fistlicktimes retains its default value of -1 (used as a null)
                 break;
