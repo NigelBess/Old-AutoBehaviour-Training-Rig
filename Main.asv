@@ -169,7 +169,7 @@ for i = 1:numTrials
            % pause(.005);%to do: remove hardcode
         end
         results.EndTrial(experiment.getExpTime());
-        experiment.giveWater(waterGiveTime/5);%to do: remove hardcode
+        experiment.giveWater(waterGiveTime);%to do: remove hardcode
     else
         if (experiment.isBeamBroken())
             experiment.playNoise();

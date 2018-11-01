@@ -4,7 +4,8 @@ properties (Constant)
      GREY_VALUE = .5
      RING_OUTER = 1000;
      RING_INNER = 750;
-     CONTRAST_OPTIONS = [.125 .25 .5 1]
+     CONTRAST_OPTIONS = [1]
+     %CONTRAST_OPTIONS = [.125 .25 .5 1]
      %CONTACT_THRESHOLD = 10;
 end
 properties
