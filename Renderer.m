@@ -1,6 +1,6 @@
 classdef Renderer < handle
 properties (Constant)
-     DISPLAY_SCREEN_NUMBER = 0
+     DISPLAY_SCREEN_NUMBER = 2
      GREY_VALUE = .5
      RING_OUTER = 1000;
      RING_INNER = 750;
