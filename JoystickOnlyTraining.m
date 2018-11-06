@@ -19,8 +19,8 @@ port = 'COM3';
     currSide = roll();
     e.closeServos();
     e.openSide(currSide);
-    while r.getCurrentTrial < numTrials
-        r.StartTrial(0,0,GetSecs());
+    r.StartTrial(0,0,GetSecs());
+    while r.getCurrentTrial < numTrials 
         currReading = e.readEnc();
         if (sign(currSide)==sign(currReading) && lastReading == 0)
                 lastReading = 1;
@@ -35,16 +35,16 @@ port = 'COM3';
                         break;
                     end
                 end
-                e.giveWater(.03);
+                e.giveWater(.05);
                 currSide = roll();
-                r.save();
                 e.closeServos();
                 e.openSide(currSide);
+                r.StartTrial(0,0,GetSecs());
                 startTime = GetSecs();
         else
             lastReading = 0;
         end
-        e.refillWater(.03)
+        e.refillWater(.03h)
         pause(.005)
     end
     

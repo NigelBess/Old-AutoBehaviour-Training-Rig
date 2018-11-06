@@ -22,8 +22,8 @@ classdef RealExperiment < Experiment
         BEAM_BREAK_PIN = 'D11'
         BUTTON_PIN = 'A4';
         BUTTON_POWER_PIN = 'A5';
-        LEFT_SERVO_OPEN_POS = 1
-        RIGHT_SERVO_OPEN_POS = 0
+        LEFT_SERVO_OPEN_POS = 0.99
+        RIGHT_SERVO_OPEN_POS = 0.01
         LEFT_SERVO_CLOSED_POS = 0.6
         RIGHT_SERVO_CLOSED_POS = 0.4
         JOYSTICK_RESPONSE_THRESHOLD = 20

@@ -6,20 +6,19 @@ timeout = 20;
 
 %*IMPORTANT*
 %make sure to set these values before running
-mouseID = '000';
-sessionNum = 5;
-numTrials = 100;
+mouseID = 'AB004CL';
+sessionNum = 2;
+numTrials = 10000;
 
 
 
-waterGiveTime = 0.07;%s
+waterGiveTime = 0.02;%s
 port = 'COM3';
 
 
 
 
-
-    experiment = RealExperiment(port);
+experiment = RealExperiment(port);
     
     
  
