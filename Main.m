@@ -4,16 +4,11 @@ lastFrameTime = 0;
 maxVelocity = 250;
 timeout = 20;
 
-%*IMPORTANT*
-%make sure to set these values before running
-mouseID = 'AB004CL';
-sessionNum = 2;
-numTrials = 10000;
+requestInput;
 
 
 
 waterGiveTime = 0.02;%s
-port = 'COM3';
 
 
 

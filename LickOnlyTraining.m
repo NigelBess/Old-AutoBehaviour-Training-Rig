@@ -1,12 +1,7 @@
 clc
 clear all
 
-%*IMPORTANT*
-%make sure to set these values before running
-mouseID = '000';
-sessionNum = 2;
-numTrials = 10000;
-port = 'COM3';
+requestInput;
 
 e = RealExperiment(port);
 r = Results(mouseID, numTrials,sessionNum,e,'lickOnly');

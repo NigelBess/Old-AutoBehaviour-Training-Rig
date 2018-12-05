@@ -1,12 +1,7 @@
 clc
 clear all
 
-%*IMPORTANT*
-%make sure to set these values before running
-mouseID = '000';
-sessionNum = 1;
-numTrials = 1000;
-port = 'COM3';
+requestInput;
 
     e = RealExperiment(port);
     r = Results(mouseID, numTrials,sessionNum,e,'joyStickOnly');
@@ -44,7 +39,7 @@ port = 'COM3';
         else
             lastReading = 0;
         end
-        e.refillWater(.03h)
+        e.refillWater(.03)
         pause(.005)
     end
     
