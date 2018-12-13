@@ -1,4 +1,4 @@
-mouseID = '000';
-sessionNum = '1';
+mouseID = 'AB-005';
+sessionNum = '3';
 numTrials = '1000';
-port = 'COM4';
+port = 'COM5';

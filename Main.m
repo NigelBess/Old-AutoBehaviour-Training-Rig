@@ -30,7 +30,7 @@ experiment.playReward()
 %experiment.logEvent('Starting session');
 velocitySensitivity = maxVelocity/experiment.MAX_JOYSTICK_VALUE;
 
-lastFrameTime = GetSecs();
+
 buttonPressed = false;
 clc;
 for i = 1:numTrials
@@ -85,6 +85,7 @@ for i = 1:numTrials
     vel = 0;
     experiment.openServos();
     time = experiment.getExpTime();
+    lastFrameTime = GetSecs();
     while ~finished && time - startRespdisplayWindow < timeout
         time = experiment.getExpTime();
         if (experiment.isButtonPressed)
