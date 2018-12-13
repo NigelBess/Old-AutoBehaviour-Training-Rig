@@ -10,11 +10,11 @@ val = inputdlg(prompt,title,dims,defInput);
  numTrials = str2num(val{3});
     port = val{4};
     
-    defaults = fopen('defaultValues.m','w');
+    defaults = fopen('defaultValues.m','wt');
     lineEnd = "';\n";
     str = "mouseID = '" + string(mouseID)+lineEnd;
     str = str + "sessionNum = '" + string(num2str(sessionNum))+lineEnd;
     str = str + "numTrials = '" + string(num2str(numTrials))+lineEnd;
-    str = str + "port = '" + string(port)+lineEnd;
-    fprintf(defaults,str);
-    fclose(defaults);
+    str = "port = '" + string(port)+lineEnd;
+    fwrite(defaults,str);
+    fclose(defults);

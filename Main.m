@@ -1,6 +1,5 @@
 clc
 clear all
-lastFrameTime = 0;
 maxVelocity = 250;
 timeout = 20;
 
@@ -35,18 +34,21 @@ lastFrameTime = GetSecs();
 buttonPressed = false;
 clc;
 for i = 1:numTrials
-
+     if (experiment.isButtonPressed)
+           buttonPressed = true;
+           break;
+    end
     while ~experiment.isBeamBroken()
         if (experiment.isButtonPressed)
            buttonPressed = true;
            break;
         end
     end
-    if (experiment.isButtonPressed)
-           buttonPressed = true;
-           break;
+    if(buttonPressed)
+        break;
     end
-    experiment.openServos();
+   
+    
 
     
     choice = rand();%used to decied if grated circle starts on the left or right
@@ -81,6 +83,7 @@ for i = 1:numTrials
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
    
     vel = 0;
+    experiment.openServos();
     time = experiment.getExpTime();
     while ~finished && time - startRespdisplayWindow < timeout
         time = experiment.getExpTime();
@@ -158,6 +161,7 @@ for i = 1:numTrials
                 results.LogLick(GetSecs()-startLickdisplayWindow);%we want to log the time of lick to see if the mouse was anticipating the water
                 %if the mouse doesn't lick within this while loop,
                 %fistlicktimes retains its default value of -1 (used as a null)
+                %
                 break;
             end
            % pause(.005);%to do: remove hardcode
