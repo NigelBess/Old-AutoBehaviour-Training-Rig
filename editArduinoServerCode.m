@@ -1,0 +1,1 @@
+edit(fullfile(arduinoio.SPPKGRoot, '+arduinoio', '+internal', 'boards.xml'));

@@ -1,25 +1,22 @@
 clc
 clear all
-lastFrameTime = 0;
 maxVelocity = 250;
 timeout = 20;
 
+requestInput;
 
-mouseID = '000';
-sessionNum = 1;
-%to do: change session num to look for existing files and increment automatically
-numTrials = 100;
-port = 'COM3';
 
+
+waterGiveTime = 0.02;%s
 
 
 
 
-    experiment = RealExperiment(port);
+experiment = RealExperiment(port);
     
     
  
-renderer = Renderer();
+renderer = Renderer(screenNum);
 results = Results(mouseID, numTrials ,sessionNum,experiment,'closedLoopTraining');
 results.setContrastOptions(renderer);
 
@@ -33,22 +30,25 @@ experiment.playReward()
 %experiment.logEvent('Starting session');
 velocitySensitivity = maxVelocity/experiment.MAX_JOYSTICK_VALUE;
 
-lastFrameTime = GetSecs();
+
 buttonPressed = false;
 clc;
 for i = 1:numTrials
-
+     if (experiment.isButtonPressed)
+           buttonPressed = true;
+           break;
+    end
     while ~experiment.isBeamBroken()
         if (experiment.isButtonPressed)
            buttonPressed = true;
            break;
         end
     end
-    if (experiment.isButtonPressed)
-           buttonPressed = true;
-           break;
+    if(buttonPressed)
+        break;
     end
-    experiment.openServos();
+   
+    
 
     
     choice = rand();%used to decied if grated circle starts on the left or right
@@ -83,7 +83,9 @@ for i = 1:numTrials
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
    
     vel = 0;
+    experiment.openServos();
     time = experiment.getExpTime();
+    lastFrameTime = GetSecs();
     while ~finished && time - startRespdisplayWindow < timeout
         time = experiment.getExpTime();
         if (experiment.isButtonPressed)
@@ -127,16 +129,10 @@ for i = 1:numTrials
             %experiment.logEvent('Moved grating to center')
             results.LogSuccess(experiment.getExpTime());
             finished = 1;%true
+            experiment.giveWater(waterGiveTime);
         end
         
         renderer.NewFrame(pos);
-        
-        
-        
-       
-
-
-        
         
         
        % experiment.logData();
@@ -163,15 +159,16 @@ for i = 1:numTrials
            % experiment.logData();
            results.LogFrame(experiment.readEnc(),experiment.isLicking(),experiment.getExpTime());
             if(experiment.isLicking())
-                results.firstLickTimes(results.sessionNum) = experiment.getExpTime();%we want to log the time of lick to see if the mouse was anticipating the water
+                results.LogLick(GetSecs()-startLickdisplayWindow);%we want to log the time of lick to see if the mouse was anticipating the water
                 %if the mouse doesn't lick within this while loop,
                 %fistlicktimes retains its default value of -1 (used as a null)
+                %
                 break;
             end
            % pause(.005);%to do: remove hardcode
         end
         results.EndTrial(experiment.getExpTime());
-        experiment.giveWater(.15);%to do: remove hardcode
+        experiment.giveWater(waterGiveTime/5);%to do: remove hardcode
     else
         if (experiment.isBeamBroken())
             experiment.playNoise();
@@ -185,7 +182,7 @@ for i = 1:numTrials
     renderer.EmptyFrame();
     
     %experiment.logEvent(['Ending Trial ' num2str(i)]);
-    experiment.refillWater(.03)
+    experiment.refillWater(.001)
     results.save()
 end %end for 1:numtrials
 sca;

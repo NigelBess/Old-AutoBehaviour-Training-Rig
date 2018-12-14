@@ -32,6 +32,7 @@ classdef Results < handle
         currentTrial
         currentFrame
         frames
+        lastSavedFrame
     end
     
     methods
@@ -41,11 +42,11 @@ classdef Results < handle
             obj.globalStart = experiment.globalStart;
             obj.startTimes = zeros(1,trials);
             obj.stimSequence = zeros(1,trials);
-            
+            obj.lastSavedFrame = 0;
             obj.contrastSequence = zeros(1,trials);
             obj.joystickResponses = zeros(1,trials);
             obj.joystickResponseTimes = -1*ones(1,trials);%-1 is used as a null value
-            obj.joystickCounts = [];
+            obj.joystickCounts = zeros(1,trials);
             obj.responseCorrect = zeros(1,trials);
             obj.responded = zeros(1,trials);
             obj.firstLickTimes = [];
@@ -57,8 +58,14 @@ classdef Results < handle
             %save directory
             obj.sessionID = [datestr(date, 'mmddyy') '_' num2str(obj.sessionNum)];
             obj.saveDir = strcat('Z:/Autobehavior Data/', obj.mouseID, '_', obj.sessionID);
-            mkdir(obj.saveDir);
-            obj.csvFilename = strcat(obj.saveDir, '/', obj.mouseID, '_', obj.sessionID, '.csv');
+            saveDir2 = strcat('C:/Autobehavior Data/', obj.mouseID, '_', obj.sessionID);
+            try
+                mkdir(obj.saveDir);
+            catch
+                mkdir(saveDir2);
+                obj.saveDir = saveDir2;
+            end
+            obj.csvFilename = strcat(obj.saveDir, '/', obj.mouseID, '_', obj.sessionID,'_Frames', '.csv');
             csvHeaders = {'Encoder Reading', 'Lickometer', 'Timestamp'};
             csvfid = fopen(obj.csvFilename, 'w') ;
             fprintf(csvfid, '%s,', csvHeaders{1,1:end-1}) ;
@@ -103,10 +110,15 @@ classdef Results < handle
                 obj.joystickResponses(obj.currentTrial) = obj.stimSequence(obj.currentTrial);
                 obj.responded(obj.currentTrial) = 1;%true
             end
-            obj.joystickResponseTimes(obj.currentTrial) = time;
+            obj.joystickResponseTimes(obj.currentTrial) = time-obj.startTimes(obj.currentTrial);
         end
         function [] = LogLick(obj, time)
             obj.firstLickTimes(obj.currentTrial) = time;
+        end
+        function [] = LogJoy(obj,reading,side,time)
+            obj.joystickResponses(obj.currentTrial) = side;
+            obj.joystickCounts(obj.currentTrial) = reading;
+            obj.joystickResponseTimes(obj.currentTrial) = time;
         end
         function [] = EndTrial(obj,time)
             obj.endTimes(obj.currentTrial) = time;
@@ -114,14 +126,13 @@ classdef Results < handle
 
         %save results in '.mat' file
         function [] = save(obj)
-            if ~exist(obj.saveDir)
-                mkdir(obj.saveDir);
-            end
-            save([obj.saveDir '/' obj.mouseID '_' obj.sessionID '_results.mat'],'obj');
-            for i = 1:obj.currentFrame
+            save([obj.saveDir '/' obj.mouseID '_' obj.sessionID '_ ' obj.trialType '_results.mat'],'obj');
+            for i = (obj.lastSavedFrame+1):obj.currentFrame
                  dlmwrite(obj.csvFilename,obj.frames(i,:),'delimiter',',','precision',9,'-append');
             end
+            obj.lastSavedFrame = obj.currentFrame;
         end
+     
         
         %overall correct rate (including no-response trials)
         function ocr = getOverallCorrectRate(obj)

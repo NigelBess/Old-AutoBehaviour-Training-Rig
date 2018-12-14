@@ -12,24 +12,23 @@ classdef RealExperiment < Experiment
     
     %constants
     properties (Constant)
-        LEFT_SERVO_PIN = 'D9'
-        RIGHT_SERVO_PIN = 'D6'
-        ENCODER_PIN_A = 'D2'
-        ENCODER_PIN_B = 'D3'
-        SOLENOID_PIN = 'D12'
-        LICKMETER_READ_PIN  = 'A2'
-        LICKMETER_POWER_PIN = 'A3'
-        BEAM_BREAK_PIN = 'D11'
-        BUTTON_PIN = 'A4';
-        BUTTON_POWER_PIN = 'A5';
-        LEFT_SERVO_OPEN_POS = 1
-        RIGHT_SERVO_OPEN_POS = 0
-        LEFT_SERVO_CLOSED_POS = 0.64
-        RIGHT_SERVO_CLOSED_POS = 0.36
-        JOYSTICK_RESPONSE_THRESHOLD = 40
-        MAX_JOYSTICK_VALUE = 80
+        LEFT_SERVO_PIN = "D9"
+        RIGHT_SERVO_PIN = "D6"
+        ENCODER_PIN_A = "D2"
+        ENCODER_PIN_B = "D3"
+        SOLENOID_PIN = "D12"
+        LICKMETER_READ_PIN  = "A2"
+        LICKMETER_POWER_PIN = "A3"
+        BEAM_BREAK_PIN = "D11"
+        BUTTON_PIN = "A4";
+        BUTTON_POWER_PIN = "A5";
+        LEFT_SERVO_OPEN_POS = 0.4
+        RIGHT_SERVO_OPEN_POS = 0.6
+        LEFT_SERVO_CLOSED_POS = 0
+        RIGHT_SERVO_CLOSED_POS = 1
+        JOYSTICK_RESPONSE_THRESHOLD = 20
+        MAX_JOYSTICK_VALUE = 100
         SERVO_ADJUSTMENT_TIME = 0.5
-        SERVO_TRANSISTOR_PIN = 'A1'
     end
     
     methods
@@ -38,9 +37,27 @@ classdef RealExperiment < Experiment
             
             obj.arduinoBoard = arduino(port,'uno','libraries',{'servo','rotaryEncoder'});
             
+            digitalOutputPins = [obj.SOLENOID_PIN, obj.LICKMETER_POWER_PIN, obj.BUTTON_POWER_PIN];
+            for pin = digitalOutputPins
+                configurePin(obj.arduinoBoard,pin,'DigitalOutput');
+            end
+            
+            digitalInputPins = [obj.LICKMETER_READ_PIN, obj.BUTTON_PIN];
+            for pin = digitalInputPins
+                configurePin(obj.arduinoBoard,pin,'DigitalInput')
+            end
+            
+            pullupPins = [obj.BEAM_BREAK_PIN];
+            for pin = pullupPins
+                configurePin(obj.arduinoBoard,pin,'pullup')
+            end
+            
+            
             obj.encoder = rotaryEncoder(obj.arduinoBoard, obj.ENCODER_PIN_A,obj.ENCODER_PIN_B);
             writeDigitalPin(obj.arduinoBoard,obj.LICKMETER_POWER_PIN,1);%for lickometer
             writeDigitalPin(obj.arduinoBoard,obj.BUTTON_POWER_PIN,1);%for button
+            
+            
             obj.leftServo = servo(obj.arduinoBoard,obj.LEFT_SERVO_PIN);
             obj.rightServo = servo(obj.arduinoBoard,obj.RIGHT_SERVO_PIN);
             obj.closeServos();
@@ -51,6 +68,14 @@ classdef RealExperiment < Experiment
         function [] = openServos(obj)
             obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);               
         end
+        function [] = openSide(obj,side)
+            if side>0
+                obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);
+            else
+                obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);
+            end
+            obj.resetEnc(0);
+        end
         function [] = openLeftServo(obj)
             obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_CLOSED_POS);       
         end
@@ -58,12 +83,10 @@ classdef RealExperiment < Experiment
             obj.positionServos(obj.LEFT_SERVO_CLOSED_POS,obj.RIGHT_SERVO_OPEN_POS);       
         end
         function [] = positionServos(obj,left,right)
-            writeDigitalPin(obj.arduinoBoard,obj.SERVO_TRANSISTOR_PIN,1);
                 obj.leftServo.writePosition(left);
                
                 obj.rightServo.writePosition(right);
                  pause(obj.SERVO_ADJUSTMENT_TIME);
-                 writeDigitalPin(obj.arduinoBoard,obj.SERVO_TRANSISTOR_PIN,0);
         end
         
         %close both servos

@@ -1,13 +1,14 @@
 classdef Renderer < handle
 properties (Constant)
-     DISPLAY_SCREEN_NUMBER = 2
      GREY_VALUE = .5
      RING_OUTER = 1000;
      RING_INNER = 750;
-     CONTRAST_OPTIONS = [.125 .25 .5 1]
+     CONTRAST_OPTIONS = [1]
+     %CONTRAST_OPTIONS = [.125 .25 .5 1]
      %CONTACT_THRESHOLD = 10;
 end
 properties
+    screenNumber
     ring
     tiledGratings
     ringSize
@@ -24,7 +25,8 @@ properties
         currentContrast
 end
 methods
-    function obj = Renderer()
+    function obj = Renderer(screenNum)
+        obj.screenNumber = screenNum;
          %Initialize PsychToolbox
             PsychDefaultSetup(2);
             Screen('Preference','SkipSyncTests',1);
@@ -32,7 +34,7 @@ methods
             Screen('Preference','SuppressAllWarnings',1);
 
             %Color Screen Grey
-            [window, windowRect] = PsychImaging('OpenWindow', obj.DISPLAY_SCREEN_NUMBER, obj.GREY_VALUE);
+            [window, windowRect] = PsychImaging('OpenWindow', obj.screenNumber, obj.GREY_VALUE);
 
             % Enable alpha blending with proper blend-function. We need it for drawing of our alpha-mask (gaussian aperture):
             Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -1,50 +1,49 @@
-function [] = JoystickOnlyTraining(mouseID, sessionNum)
+clc
+clear all
 
-    e = Experiment(mouseID, sessionNum);
-    r = Results(mouseID, sessionNum);
-    r.trialType = 'joyOnly';
+requestInput;
+
+    e = RealExperiment(port);
+    r = Results(mouseID, numTrials,sessionNum,e,'joyStickOnly');
     %starting video
     
     %system(['python C:/Users/GoardLab/Documents/AutomatedBehaviorStim/Python/Server.py '...
     %  mouseID ' ' num2str(sessionNum) '&']);
 
     lastReading = 0;
-    currSide = datasample(e.posOptions,1);
+    currSide = roll();
     e.closeServos();
-    WaitSecs(1);
-    e.resetEnc();
-    e.openServos(currSide);
-    
-    while r.numTrials < 50
+    e.openSide(currSide);
+    r.StartTrial(0,0,GetSecs());
+    while r.getCurrentTrial < numTrials 
         currReading = e.readEnc();
-        if (currReading < e.leftThresh && strcmp(currSide, 'Right') || currReading > e.rightThresh && strcmp(currSide, 'Left')) && lastReading == 0
+        if (sign(currSide)==sign(currReading) && lastReading == 0)
                 lastReading = 1;
-                r.joystickCounts(r.numTrials) = currReading;
-                r.joystickResponseTimes(r.numTrials) = GetSecs - e.globalStart;
+                r.LogJoy(currReading,currSide,GetSecs());
                 e.playReward();
-                %e.deactivateServos();
-                startLickWindow = GetSecs;    
-                %Wait for mouse to lick
-                while GetSecs - startLickWindow < .5
-                    e.logData();
-                    if(e.readLickometer() == 0)
-                        r.firstLickTimes(r.numTrials) = GetSecs - e.globalStart;
-                        break;
-                    end
-                end
+%                 e.deactivateServos();
+                pause(0.1)
+%                 startLickWindow = GetSecs;    
+%                 %Wait for mouse to lick
+%                 while GetSecs - startLickWindow < .5
+%                     if(e.isLicking())
+%                         r.LogLick(GetSecs-startLickWindow);
+%                         break;
+%                     end
+%                 end
                 e.giveWater(.03);
-                currSide = datasample(e.posOptions,1);
-                r.save();
-                r.nextTrial();
+                currSide = roll();
                 e.closeServos();
-                e.waitAndLog(1);
-                e.openServos(currSide);
-                e.resetEnc();
+                e.openSide(currSide);
+                r.StartTrial(0,0,GetSecs());
+                startTime = GetSecs();
         else
             lastReading = 0;
         end
-        e.logData();
-        e.refillWater(.03)
+        e.refillWater(.01)
         pause(.005)
     end
-end
+    
+    function out = roll()
+        out = -1+2*(rand<0.5);%either -1 or 1
+    end
