@@ -1,3 +1,4 @@
+
 prompt = {"Mouse ID", "Session Number", "Number of Trials", "Port","Number of Monitors"};
 title = "Settings";
 dims = [1 35];
@@ -20,7 +21,6 @@ val = inputdlg(prompt,title,dims,defInput);
      str = str + "screenNum = '" + string(screenNum)+lineEnd;
     fprintf(defaults,str);
     fclose(defaults);
-    
     if screenNum == 1
         screenNum = 0;
     end
