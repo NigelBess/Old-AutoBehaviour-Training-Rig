@@ -42,9 +42,14 @@ classdef RealExperiment < Experiment
                 configurePin(obj.arduinoBoard,pin,'DigitalOutput');
             end
             
-            digitalInputPins = [obj.LICKMETER_READ_PIN, obj.BUTTON_PIN];
+            digitalInputPins = [obj.BUTTON_PIN];
             for pin = digitalInputPins
                 configurePin(obj.arduinoBoard,pin,'DigitalInput')
+            end
+            
+            analogInputPins = [obj.LICKMETER_READ_PIN];
+            for pin = analogInputPins
+                configurePin(obj.arduinoBoard,pin,'AnalogInput')
             end
             
             pullupPins = [obj.BEAM_BREAK_PIN];
