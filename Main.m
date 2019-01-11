@@ -36,11 +36,8 @@ for i = 1:numTrials
            buttonPressed = true;
            break;
     end
-    while ~experiment.isBeamBroken()
-        if (experiment.isButtonPressed)
-           buttonPressed = true;
-           break;
-        end
+    while ~experiment.isBeamBroken() && ~buttonPressed
+        buttonPressed = experiment.isButtonPressed;
     end
     if(buttonPressed)
         break;
@@ -61,7 +58,7 @@ for i = 1:numTrials
         stimPosition = 1;
     end
    gratingNum = renderer.GenerateGrating();
-   pos = renderer.InitialFrame(startingOnLeft);
+   
 
 
 
@@ -76,9 +73,9 @@ for i = 1:numTrials
     finished = 0;%boolean    
     hasHit = 0;%boolean
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
-   
     vel = 0;
     experiment.openServos();
+    pos = renderer.InitialFrame(startingOnLeft);
     time = experiment.getExpTime();
     lastFrameTime = GetSecs();
     while ~finished && time - startRespdisplayWindow < timeout

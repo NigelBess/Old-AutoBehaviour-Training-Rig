@@ -42,7 +42,7 @@ classdef RealExperiment < Experiment
                 configurePin(obj.arduinoBoard,pin,'DigitalOutput');
             end
             
-            digitalInputPins = [obj.BUTTON_PIN,obj.BEAM_BREAK_PIN];
+            digitalInputPins = [obj.BUTTON_PIN];
             for pin = digitalInputPins
                 configurePin(obj.arduinoBoard,pin,'DigitalInput')
             end
@@ -71,7 +71,7 @@ classdef RealExperiment < Experiment
        
         %Open 1 or more servos
         function [] = openServos(obj)
-            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);               
+            obj.positionServos(obj.LEFT_SERVO_OPEN_POS,obj.RIGHT_SERVO_OPEN_POS);
         end
         function [] = openSide(obj,side)
             if side>0
@@ -198,7 +198,9 @@ classdef RealExperiment < Experiment
         
         %determine wheather IR beam is broken by mouse
         function broken = isBeamBroken(obj)
+            configurePin(obj.arduinoBoard,obj.BEAM_BREAK_PIN,'pullup');
             broken = ~readDigitalPin(obj.arduinoBoard,obj.BEAM_BREAK_PIN);
+            configurePin(obj.arduinoBoard,obj.BEAM_BREAK_PIN,'Unset');
         end
         function out = isButtonPressed(obj)
             out = ~readDigitalPin(obj.arduinoBoard,obj.BUTTON_PIN);
