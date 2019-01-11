@@ -6,6 +6,7 @@ timeout = 20;
 requestInput;
 
 
+
 waterGiveTime = 0.02;%s
 
 
@@ -45,6 +46,7 @@ for i = 1:numTrials
     if(buttonPressed)
         break;
     end
+   
     
 
     
@@ -53,15 +55,17 @@ for i = 1:numTrials
    %^ to do: remove hardcode
    if isnan(rightProb)
         rightProb = .5;
-   end 
+    end 
     startingOnLeft = choice > rightProb;
     if startingOnLeft
         stimPosition = -1;
     else
         stimPosition = 1;
     end
+    
    gratingNum = renderer.GenerateGrating();
    pos = renderer.InitialFrame(startingOnLeft);
+  
 
 
 

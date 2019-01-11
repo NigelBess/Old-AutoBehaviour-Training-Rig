@@ -42,7 +42,7 @@ classdef RealExperiment < Experiment
                 configurePin(obj.arduinoBoard,pin,'DigitalOutput');
             end
             
-            digitalInputPins = [obj.BUTTON_PIN];
+            digitalInputPins = [obj.BUTTON_PIN,obj.BEAM_BREAK_PIN];
             for pin = digitalInputPins
                 configurePin(obj.arduinoBoard,pin,'DigitalInput')
             end
@@ -52,7 +52,7 @@ classdef RealExperiment < Experiment
                 configurePin(obj.arduinoBoard,pin,'AnalogInput')
             end
             
-            pullupPins = [obj.BEAM_BREAK_PIN];
+            pullupPins = [];
             for pin = pullupPins
                 configurePin(obj.arduinoBoard,pin,'pullup')
             end
