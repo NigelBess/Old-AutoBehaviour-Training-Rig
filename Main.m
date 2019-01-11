@@ -75,7 +75,7 @@ for i = 1:numTrials
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
     vel = 0;
     experiment.openServos();
-    pos = renderer.InitialFrame(startingOnLeft);
+    pos = renderer.InitialFrame(~startingOnLeft);
     time = experiment.getExpTime();
     lastFrameTime = GetSecs();
     while ~finished && time - startRespdisplayWindow < timeout
