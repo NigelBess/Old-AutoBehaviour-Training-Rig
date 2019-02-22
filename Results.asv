@@ -222,14 +222,16 @@ classdef Results < handle
         %get fraction of left responses of a specific interval of trials. Used for bias correction
         function out = getLeftProportionOnInterval(obj,num)
             last = obj.currentTrial;
-            start = last-num+1;
+            start = last-num;
             if start<1
                 start = 1;
             end
             if last<=start
-                last = start;
+                out = obj.joystickResponses(start)==-1;
+                return;
             end
-            interval = obj.joystickResponses(start:last)
+            interval = obj.joystickResponses(start:last);
+            interc
             out = sum(interval==-1)/numel(interval);
         end
         

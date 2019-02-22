@@ -3,11 +3,12 @@ clear all
 maxVelocity = 250;
 timeout = 20;
 
+
 requestInput;
+mailRecipient = "kevin.sit@lifesci.ucsb.edu";
 
-
-waterGiveTime = 0.02;%s
-
+waterGiveTime = 0.01;%s
+        
 
 experiment = RealExperiment(port);
     
@@ -30,6 +31,7 @@ velocitySensitivity = maxVelocity/experiment.MAX_JOYSTICK_VALUE;
 
 buttonPressed = false;
 clc;
+try
 for i = 1:numTrials
     
      if (experiment.isButtonPressed)
@@ -44,11 +46,11 @@ for i = 1:numTrials
     end
     
 
-    
     choice = rand();%used to decied if grated circle starts on the left or right
-    rightProb = results.getLeftProportionOnInterval(i-6,i-1);%returns the proportion of left choices, over the last 5 trials
-   %^ to do: remove hardcode
-   if isnan(rightProb)
+    bias = results.getLeftProportionOnInterval(5);
+    rightProb = bias;%returns the proportion of left choices, over the last 5 trials
+   fprintf("%d\n",bias);
+    if isnan(rightProb)
         rightProb = .5;
    end 
     startingOnLeft = choice > rightProb;
@@ -75,10 +77,10 @@ for i = 1:numTrials
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
     vel = 0;
     experiment.openServos();
-    pos = renderer.InitialFrame(~startingOnLeft);
+    pos = renderer.InitialFrame(startingOnLeft);
     time = experiment.getExpTime();
     lastFrameTime = GetSecs();
-    while ~finished && time - startRespdisplayWindow < timeout
+    while ~finished && (time - startRespdisplayWindow < timeout) && ~(hasHit && ~reward)
         time = experiment.getExpTime();
         if (experiment.isButtonPressed)
            buttonPressed = true;
@@ -123,7 +125,6 @@ for i = 1:numTrials
             finished = 1;%true
             experiment.giveWater(waterGiveTime);
         end
-        
         renderer.NewFrame(pos);
         
         
@@ -177,6 +178,16 @@ for i = 1:numTrials
     experiment.refillWater(.001)
     results.save()
 end %end for 1:numtrials
+catch
+    msg = "Something went wrong with rig "+string(rig)+". Mouse "+string(mouseID) + " is no longer training.";
+    subject = "Autobehaviour ERROR: rig "+string(rig)+" mouse "+string(mouseID);
+    matlabmail(mailRecipient,msg,subject);
+end
+if i ==numTrials
+    msg = "Mouse "+string(mouseID) +" on rig " + string(rig) + " has completed all " + string(numTrials) + " trials.";
+    subject = "Autobehaviour Success: rig "+string(rig)+" mouse "+string(mouseID);
+    matlabmail(mailRecipient,msg,subject);
+end
 sca;
 function out = movePos(original, offset)
     out = original;

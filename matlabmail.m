@@ -24,8 +24,8 @@ function recipient = matlabmail(recipient, message, subject, sender, psswd)
 
 
 if nargin<4
-    sender = 'dummyaddress@gmail.com';
-    psswd = 'password_of_dummy_address';
+    sender = 'autobehaviorbot@gmail.com';
+    psswd = 'plsNoHack';
 end
 
 setpref('Internet','E_mail',sender);

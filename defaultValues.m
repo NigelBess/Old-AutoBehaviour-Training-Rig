@@ -1,5 +1,7 @@
-mouseID = '0';
-sessionNum = '1';
+mouseID = 'AB-005';
+sessionNum = '18';
 numTrials = '1000';
-port = 'COM3';
-screenNum = '0';
+port = 'COM5';
+screenNum = '2';
+reward = '0';
+rig = '2';
