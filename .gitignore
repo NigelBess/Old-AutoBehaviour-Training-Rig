@@ -5,3 +5,5 @@ Data/
 
 # Matlab workspace files
 *.mat
+
+defaultValues.m

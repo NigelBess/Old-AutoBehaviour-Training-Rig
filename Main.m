@@ -76,10 +76,11 @@ for i = 1:numTrials
     hasHit = 0;%boolean
    % experiment.logEvent(['Starting Trial ' num2str(i)]);
     vel = 0;
-    experiment.openServos();
+    
     pos = renderer.InitialFrame(startingOnLeft);
     time = experiment.getExpTime();
     lastFrameTime = GetSecs();
+    experiment.openServos();
     while ~finished && (time - startRespdisplayWindow < timeout) && ~(hasHit && ~reward)
         time = experiment.getExpTime();
         if (experiment.isButtonPressed)
@@ -166,6 +167,8 @@ for i = 1:numTrials
         if (experiment.isBeamBroken())
             experiment.playNoise();
             results.EndTrial(experiment.getExpTime());
+            renderer.EmptyFrame();
+            pause(2);
         else
             results.cancelTrial();
         end

@@ -5,7 +5,7 @@ timeout = 20;
 
 
 requestInput;
-mailRecipient = "nigelbess@gmail.com";
+mailRecipient = "kevin.sit@lifesci.ucsb.edu";
 
 waterGiveTime = 0.01;%s
         
@@ -166,6 +166,8 @@ for i = 1:numTrials
         if (experiment.isBeamBroken())
             experiment.playNoise();
             results.EndTrial(experiment.getExpTime());
+            renderer.EmptyFrame();
+            
         else
             results.cancelTrial();
         end
@@ -180,12 +182,13 @@ for i = 1:numTrials
 end %end for 1:numtrials
 catch
     msg = "Something went wrong with rig "+string(rig)+". Mouse "+string(mouseID) + " is no longer training.";
-    subject = "Autobehaviour ERROR rig "+string(rig)+" mouse "+string(mouseID);
-    matlabmail();
+    subject = "Autobehaviour ERROR: rig "+string(rig)+" mouse "+string(mouseID);
+    matlabmail(mailRecipient,msg,subject);
 end
 if i ==numTrials
     msg = "Mouse "+string(mouseID) +" on rig " + string(rig) + " has completed all " + string(numTrials) + " trials.";
-    subject = "Autobehaviour ERROR rig "+string(rig)+" mouse "+string(mouseID);
+    subject = "Autobehaviour Success: rig "+string(rig)+" mouse "+string(mouseID);
+    matlabmail(mailRecipient,msg,subject);
 end
 sca;
 function out = movePos(original, offset)
