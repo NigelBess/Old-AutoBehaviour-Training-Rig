@@ -74,8 +74,15 @@ methods
     Screen('Flip',obj.displayWindow);
     end
     function [] = EmptyFrame(obj)
-    Screen('FillRect',obj.displayWindow,obj.GREY_VALUE);
-    Screen('Flip',obj.displayWindow);
+        obj.GreyFill(obj.GREY_VALUE);
+    end
+    function [] = GreyFill(obj,val)
+        Screen('FillRect',obj.displayWindow,val);
+        Screen('Flip',obj.displayWindow);
+    end
+    function [] = BlackFrame(obj)
+        fprintf("filling screen black\n");
+        obj.GreyFill(0);
     end
     function initPos = InitialFrame(obj, startOnLeft)
          initPos = obj.InitPos(startOnLeft);

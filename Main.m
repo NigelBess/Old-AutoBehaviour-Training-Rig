@@ -33,7 +33,7 @@ buttonPressed = false;
 clc;
 try
 for i = 1:numTrials
-    
+    renderer.EmptyFrame();
      if (experiment.isButtonPressed)
            buttonPressed = true;
            break;
@@ -80,6 +80,7 @@ for i = 1:numTrials
     pos = renderer.InitialFrame(startingOnLeft);
     time = experiment.getExpTime();
     lastFrameTime = GetSecs();
+    pause(0.2);
     experiment.openServos();
     while ~finished && (time - startRespdisplayWindow < timeout) && ~(hasHit && ~reward)
         time = experiment.getExpTime();
@@ -100,6 +101,7 @@ for i = 1:numTrials
             vel = 0;%prevent the circle from moving farther
             results.LogLeft();%log trial as hitting left wall
             if(~hasHit)%has Hit is used to prevent repeated noise when hitting the wall during the same trial
+                if(~reward) renderer.BlackFrame(); end
                 %also hasHit prevents logging trial as a success if mouse
                 %has already failed
                experiment.playNoise();
@@ -110,6 +112,7 @@ for i = 1:numTrials
             pos = renderer.ToRight();
             vel = 0;
             if(~hasHit)
+                if(~reward) renderer.BlackFrame(); end
                 experiment.playNoise();
                 %experiment.logEvent('Hit right side');
             end
@@ -126,7 +129,7 @@ for i = 1:numTrials
             finished = 1;%true
             experiment.giveWater(waterGiveTime);
         end
-        renderer.NewFrame(pos);
+        if(~(hasHit &&~reward))renderer.NewFrame(pos); end
         
         
        % experiment.logData();
@@ -164,18 +167,19 @@ for i = 1:numTrials
         results.EndTrial(experiment.getExpTime());
         experiment.giveWater(waterGiveTime/5);%to do: remove hardcode
     else
+            renderer.BlackFrame();
+            %experiment.playNoise();
+            pause(4);
         if (experiment.isBeamBroken())
-            experiment.playNoise();
             results.EndTrial(experiment.getExpTime());
-            renderer.EmptyFrame();
-            pause(2);
         else
             results.cancelTrial();
+            renderer.EmptyFrame();
         end
         
     end 
     results.shortStats();
-    renderer.EmptyFrame();
+    
     
     %experiment.logEvent(['Ending Trial ' num2str(i)]);
     experiment.refillWater(.001)
